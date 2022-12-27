@@ -27,7 +27,7 @@ const refreshToken = async() => {
     }
 };
 
-export default call = async(url,method,data) => {
+export default call_tryoto = async(url,method,data) => {
     if(!access_token || !access_token_expire_at || (  Math.round(new Date().getTime() / 1000) > access_token_expire_at )){
         refreshToken();
     }
