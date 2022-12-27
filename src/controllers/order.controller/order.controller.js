@@ -352,15 +352,15 @@ export default {
         };
         axios(config).then(async(paymentStatusResponse)=>{
             if(!paymentStatusResponse.data?.IsSuccess){
-                next(new Error(paymentStatusResponse.data.message));
+                return next(new Error(paymentStatusResponse.data.message));
             }
             let invoiceId = paymentStatusResponse.data.Data.InvoiceId;
             let order = await Order.findOne({ paymentId: invoiceId });
             if(!order){
-                res.status(500).json({ message: 'Order does not exist' });
+                return res.status(500).json({ message: 'Order does not exist' });
             }
             if(order.customer_id != user.id){
-                res.status(403).json({ message: 'Forbidden' });
+                return res.status(403).json({ message: 'Forbidden' });
             }
             if(paymentStatusResponse.data.Data.InvoiceStatus == 'Failed'){
                 order.paymentStatus = 'FAILED';
