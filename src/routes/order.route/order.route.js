@@ -22,8 +22,12 @@ router.route('/invoice')
 router.route('/createPickupLocation')
   .post(orderController.createPickupLocation);
 
-router.route('/createOrder')
-  .post(orderController.createOrder);
+
+router.route('/paymentStatus')
+  .post(orderController.paymentStatus);
+  
+// router.route('/createOrder')
+//   .post(orderController.createOrder);
 
 router.route('/getOrders')
   .post(orderController.getOrders);

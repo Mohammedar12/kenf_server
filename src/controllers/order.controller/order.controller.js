@@ -5,9 +5,11 @@ import User from "../../models/user.model/user.model";
 import Order from "../../models/order.model/order.model";
 import Product from '../../models/products.model/products.model';
 import { checkValidations } from "../../helpers/CheckMethods";
-
+import Shipping from '../../models/settings.model/shipping.model';
+import Coupon from '../../models/marketing.model/coupon.model';
 import i18n from "i18n";
 import jwt from "jsonwebtoken";
+import tryotoService from "../../services/tryoto.service";
 
 export default {
     // @route   GET order/refreshToken
@@ -322,7 +324,201 @@ export default {
         }
     },
 
+    async paymentStatus(req, res, next){
+        if(!req.query.paymentId){
+            return res.status(400).json({ message: "Payment Id missing" });
+        }
+        let paymentId = req.query.paymentId;
+        const token = req.body.session;
+        const query = jwt.verify(token, process.env.JWT_SECRET);
+        const keys = Object.keys(query);
+        const baseURL = process.env.PAYMENT_URL;
+        let user = await User.findOne({ [keys[0]]: query[keys[0]] });
+        if(!user){
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        var config = {
+            method: "post",
+            url: baseURL + "/v2/GetPaymentStatus",
+            headers: {
+                Accept: "application/json",
+                Authorization: "Bearer " + process.env.LIVE_TOKEN,
+                "Content-Type": "application/json",
+            },
+            data: {
+                Key: paymentId,
+                KeyType: "PaymentId",
+            },
+        };
+        axios(config).then(async(paymentStatusResponse)=>{
+            if(!paymentStatusResponse.data?.IsSuccess){
+                next(new Error(paymentStatusResponse.data.message));
+            }
+            let invoiceId = paymentStatusResponse.data.Data.InvoiceId;
+            let order = await Order.findOne({ paymentId: invoiceId });
+            if(!order){
+                res.status(500).json({ message: 'Order does not exist' });
+            }
+            if(order.customer_id != user.id){
+                res.status(403).json({ message: 'Forbidden' });
+            }
+            if(paymentStatusResponse.data.Data.InvoiceStatus == 'Failed'){
+                order.paymentStatus = 'FAILED';
+                await order.save();
+                return res.status(200).json({ IsSuccess: false, transactionStatus: 'Failed', message: 'Transaction failed' });
+            }
+            if(paymentStatusResponse.data.Data.InvoiceStatus == 'Paid'){
+                if(order.paymentStatus === 'SUCCESSED'){
+                    return res.status(200).json({ IsSuccess: true, transactionStatus: 'Paid', message: 'Transaction completed successfully.' });
+                }
+                order.paymentStatus = 'SUCCESSED';
+                await order.save();
+                let productIds = order.products;
+                let products =  await Product.find({ '_id': { $in: productIds } });
+                let date = new Date();
+                let orderId = date.getTime();
+                var data = {
+                    orderId: orderId,
+                    pickupLocationCode: "W-KENF-01",
+                    serviceType: "pickupFromStore",
+                    createShipment: true,
+                    payment_method: "paid",
+                    amount: order.totalPrice,
+                    amount_due: 0,
+                    currency: "SAR",
+                    customer: {
+                        name: order.deliveryInfo.name,
+                        email: order.deliveryInfo.email,
+                        mobile: order.deliveryInfo.phone,
+                        address: order.deliveryInfo.street,
+                        city: order.deliveryInfo.city,
+                        country: order.deliveryInfo.country,
+                        postcode: order.deliveryInfo.zipCode,
+                    },
+                    items: products.map((item) => {
+                        return {
+                            productId: item.id,
+                            name: item.name_en,
+                            price: item.extra_price,
+                        };
+                    }),
+                };
+
+                try{
+                    let deliveryResponse = await tryotoService(createOrder,'post',data);
+                    order.order_id = deliveryResponse.data.otoId;
+                    await order.save();
+                    return res.status(200).json({ IsSuccess: true, transactionStatus: 'Paid', message: 'Transaction completed successfully.' });
+                }
+                catch(e){
+                    return res.status(200).json({ IsSuccess: false, transactionStatus: 'Paid', message: 'Transaction successfully, but Error while creating shipment. Please contact support.' });
+                }
+            }
+            return res.status(200).json({ IsSuccess: false, transactionStatus: paymentStatusResponse.data.Data.InvoiceStatus, message: 'Transaction is pending.' });
+        }).catch(err => next(err));
+    },
+
     async executePayment(req, res, next) {
+        const token = req.body.session;
+        const query = jwt.verify(token, process.env.JWT_SECRET);
+        const keys = Object.keys(query);
+        const baseURL = process.env.PAYMENT_URL;
+        let user = await User.findOne({ [keys[0]]: query[keys[0]] });
+        if(!user){
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        if(!req.body.productList || req.body.productList.length == 0){
+            return res.status(400).json({ message: 'Product list not found.' });
+        }
+        if(!req.body.shippingId){
+            return res.status(400).json({ message: 'Shipping id missing.' });
+        }
+        let shipping = await Shipping.findOne({ '_id': req.body.shippingId });
+        if(!shipping){
+            return res.status(400).json({ message: 'Shipping not found.' });
+        }
+        let productsIds = [];
+        req.body.productList.map(product => {
+            productsIds.push(product.id);
+        });
+        let products = await Product.find({ '_id': { $in: productsIds } });
+        if(products.length !== productsIds.length){
+            return res.status(400).json({ message: 'Invalid products' });
+        }
+        let totalShoppingBag = 0;
+        let tax = 0;
+        let totalPrice = 0;
+        let discount = 0;
+        products.map(product => {
+            totalShoppingBag += product.extra_price;
+        });
+        let coupon;
+        if(req.body.coupon_id){
+            coupon = await Coupon.findOne({ code: req.body.coupon_id, deleted: false });
+            if(!coupon){
+                return res.status(400).json({ message: 'Invalid discount code.' });
+            }
+            if (coupon.discount_type == "percent") {
+                discount = coupon.discount * totalShoppingBag / 100;
+                let maxDiscount = coupon.max_discount;
+                discount = discount > maxDiscount ? maxDiscount : discount;
+                
+            } else {
+                discount = coupon.discount * totalShoppingBag / 100;
+            }
+        }
+        tax = ( totalShoppingBag - discount ) * 0.15;
+        totalPrice = (totalShoppingBag - discount) + tax + shipping.price;
+        var config = {
+            method: "post",
+            url: baseURL + "/v2/ExecutePayment",
+            headers: {
+                Accept: "application/json",
+                Authorization: "Bearer " + process.env.LIVE_TOKEN,
+                "Content-Type": "application/json",
+            },
+            data: {
+                SessionId: req.body.sessionId,
+                CustomerName: req.body.address.fullname,
+                CustomerMobile: req.body.address.phone,
+                CustomerEmail: req.body.address.email,
+                InvoiceValue: totalPrice,
+                Language: "en",
+                CustomerAddress: {
+                    Address: req.body.address.street,
+                },
+                CallBackUrl: process.env.CLIENT_APP_URL+'paymentStatus',
+                ErrorUrl: process.env.CLIENT_APP_URL+'paymentStatus'
+            },
+        };
+        axios(config).then(async(paymentResponse)=>{
+            if(!paymentResponse.data?.IsSuccess){
+                next(new Error(paymentResponse.data.message));
+            }
+            let order = await Order.create({
+                customer_id: user.id,
+                products: productsIds,
+                coupon_id: req.body.coupon_id,
+                price: totalShoppingBag,
+                totalPrice: totalPrice,
+                discountValue: discount,
+                paymentStatus: 'PENDING',
+                paymentId: paymentResponse.data.Data.InvoiceId,
+                deliveryInfo: {
+                    name: req.body.address.fullname,
+                    email: req.body.address.email,
+                    mobile: req.body.address.phone,
+                    address: req.body.address.street,
+                    city: req.body.address.city,
+                    country: req.body.address.country,
+                    postcode: req.body.address.zipCode,
+                }
+            });
+            return res.status(200).json(paymentResponse.data)
+        }).catch(err => next(err));
+    },
+
+    async executePayment_o(req, res, next) {
         const date = new Date();
 
         const baseURL = process.env.PAYMENT_URL;

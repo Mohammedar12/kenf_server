@@ -64,6 +64,15 @@ const orderSchema = new Schema({
     paymentStatus:{
         type:String,
         enum:['PENDING','FAILED','SUCCESSED','REFUNDED'],
+    },
+    deliveryInfo: {
+        name: { type:String },
+        email: { type:String },
+        mobile: { type:String },
+        address: { type:String },
+        city: { type:String },
+        country: { type:String },
+        postcode: { type:String }
     }
 }, {
     timestamps: true
