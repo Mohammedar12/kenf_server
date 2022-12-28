@@ -330,7 +330,7 @@ export default {
         }
         let paymentId = req.query.paymentId;
         const token = req.body.session;
-        const query = jwt.verify(token, process.env.JWT_SECRET);
+        const query = await jwt.verify(token, process.env.JWT_SECRET);
         const keys = Object.keys(query);
         const baseURL = process.env.PAYMENT_URL;
         let user = await User.findOne({ [keys[0]]: query[keys[0]] });
@@ -420,7 +420,7 @@ export default {
 
     async executePayment(req, res, next) {
         const token = req.body.session;
-        const query = jwt.verify(token, process.env.JWT_SECRET);
+        const query = await jwt.verify(token, process.env.JWT_SECRET);
         const keys = Object.keys(query);
         const baseURL = process.env.PAYMENT_URL;
         let user = await User.findOne({ [keys[0]]: query[keys[0]] });
