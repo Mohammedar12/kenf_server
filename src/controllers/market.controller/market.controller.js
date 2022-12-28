@@ -1,6 +1,7 @@
 import MarketingCategory from '../../models/marketing.model/marketing_category.model';
 import Offer from '../../models/marketing.model/offer.model';
 import Coupon from '../../models/marketing.model/coupon.model';
+import Order from '../../models/marketing.model/order.model';
 import axios from 'axios';
 import {
   body
@@ -17,7 +18,7 @@ export default {
   async confirmDiscount(req, res, next) {
     try {
 
-        Coupon.findOne({ code: req.query.code, deleted: false })
+        Coupon.findOne({ code: req.query.code, deleted: false },{password: 0})
           .then(coupon => {
               res.status(200).json(coupon);
           })
@@ -276,6 +277,7 @@ export default {
             except_discounted_product: req.body.except_discounted_product,
             start_date: req.body.start_date,
             end_date: req.body.end_date,
+            password: req.body.password,
           }
         }, {
           upsert: true
@@ -301,6 +303,7 @@ export default {
           except_discounted_product: req.body.except_discounted_product,
           start_date: req.body.start_date,
           end_date: req.body.end_date,
+          password: req.body.password,
         });
         res.status(200).send(newGroupUnit);
 
@@ -314,7 +317,7 @@ export default {
       let user = req.user;
       let itemGroups = await Coupon.find({
         deleted: false
-      }).populate('included_category');
+      },{ password: 0 }).populate('included_category');
       res.status(200).send(itemGroups);
 
     } catch (error) {
@@ -348,4 +351,36 @@ export default {
       next(error);
     }
   },
+  async getCouponStats(req, res, next) {
+    try {
+      if (!(req.body.password && req.body.coupon)) {
+        let coupon = await Coupon.findOne({ code: req.body.code, deleted: false },{password: 0});
+        if(!coupon){
+          return res.status(404).json({ message: 'Coupon not found' });
+        }
+        if(coupon.password !== req.body.password){
+          return res.status(401).json({ message: 'Wrong password!' });
+        }
+        let count = await Order.count({ '_id': coupon.id, paymentStatus: 'SUCCESSED' ,deleted: false });
+        let profit = 0;
+        if(coupon.profit_type === 'fixed'){
+          profit = count * count.profit;
+        }
+        if(coupon.profit_type === 'percent'){
+          let totalAmount = await Order.aggregate([
+            { $match: { '_id': coupon.id, paymentStatus: 'SUCCESSED' ,deleted: false } },
+            { $group: { _id: null, amount: { $sum: "$price" } } }
+          ]);
+          if(totalAmount && totalAmount.length != 0){
+            profit = (totalAmount[0].amount * coupon.profit) / 100;
+          }
+        }
+        return res.status(200).json({ count, profit });
+      } else {
+        return res.status(400).json({ message: 'Bad request.' });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
 }

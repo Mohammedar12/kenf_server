@@ -495,7 +495,7 @@ export default {
         });
         let coupon;
         if(req.body.coupon_id){
-            coupon = await Coupon.findOne({ code: req.body.coupon_id, deleted: false });
+            coupon = await Coupon.findOne({ '_id': req.body.coupon_id, deleted: false });
             if(!coupon){
                 return res.status(400).json({ message: 'Invalid discount code.' });
             }
@@ -505,11 +505,14 @@ export default {
                 discount = discount > maxDiscount ? maxDiscount : discount;
                 
             } else {
-                discount = coupon.discount * totalShoppingBag / 100;
+                discount = coupon.discount;
             }
         }
-        tax = ( totalShoppingBag - discount ) * 0.15;
-        totalPrice = (totalShoppingBag - discount) + tax + shipping.price;
+        let priceAfterDiscount = totalShoppingBag - discount;
+        if(priceAfterDiscount < 0)
+            priceAfterDiscount = 0;
+        tax = priceAfterDiscount * 0.15;
+        totalPrice = priceAfterDiscount + tax + shipping.price;
         var config = {
             method: "post",
             url: baseURL + "/v2/ExecutePayment",
@@ -539,7 +542,7 @@ export default {
             let order = await Order.create({
                 customer_id: user.id,
                 products: productsIds,
-                coupon_id: req.body.coupon_id,
+                ...(coupon && { coupon_id: coupon.id }),
                 price: totalShoppingBag,
                 totalPrice: totalPrice,
                 discountValue: discount,

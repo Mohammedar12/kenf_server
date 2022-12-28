@@ -32,6 +32,10 @@ const coupon = new Schema({
     type: String,
     enum: ['percent', 'fixed']
   },
+  password: {
+    type: String,
+    required: true
+  },
   total_purchase_condition: {
     type: Number
   },
