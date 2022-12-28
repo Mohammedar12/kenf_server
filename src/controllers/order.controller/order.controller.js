@@ -330,7 +330,16 @@ export default {
         }
         let paymentId = req.query.paymentId;
         const token = req.body.session;
-        const query = await jwt.verify(token, process.env.JWT_SECRET);
+        if(!token){
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        let query;
+        try{
+            query = await jwt.verify(token, process.env.JWT_SECRET);
+        }
+        catch(e){
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
         const keys = Object.keys(query);
         const baseURL = process.env.PAYMENT_URL;
         let user = await User.findOne({ [keys[0]]: query[keys[0]] });
@@ -420,7 +429,16 @@ export default {
 
     async executePayment(req, res, next) {
         const token = req.body.session;
-        const query = await jwt.verify(token, process.env.JWT_SECRET);
+        if(!token){
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        let query;
+        try{
+            query = await jwt.verify(token, process.env.JWT_SECRET);
+        }
+        catch(e){
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
         const keys = Object.keys(query);
         const baseURL = process.env.PAYMENT_URL;
         let user = await User.findOne({ [keys[0]]: query[keys[0]] });
