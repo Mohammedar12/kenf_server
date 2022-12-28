@@ -1,7 +1,7 @@
 import MarketingCategory from '../../models/marketing.model/marketing_category.model';
 import Offer from '../../models/marketing.model/offer.model';
 import Coupon from '../../models/marketing.model/coupon.model';
-import Order from '../../models/marketing.model/order.model';
+import Order from '../../models/order.model/order.model';
 import axios from 'axios';
 import {
   body

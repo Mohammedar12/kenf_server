@@ -19,7 +19,7 @@ router.route('/coupon')
   .post(requireAuth, marketController.validateCoupon(), marketController.coupon)
   .delete(marketController.delCoupon);
 
-router.route('/coupon/stats').get(requireAuth, marketController.getCouponStats);
+router.route('/coupon/stats').post(requireAuth, marketController.getCouponStats);
 
 router.route('/confirmDiscount')
   .get(marketController.confirmDiscount);
