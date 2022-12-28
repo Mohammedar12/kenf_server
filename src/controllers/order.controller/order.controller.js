@@ -417,6 +417,22 @@ export default {
                     let deliveryResponse = await tryotoService(createOrder,'post',data);
                     order.order_id = deliveryResponse.data.otoId;
                     await order.save();
+                    products.map(async(item) => {
+                        await Product.updateOne(
+                            { _id: item.id },
+                            {
+                                $set: { quantity: item.quantity - 1 }
+                            }
+                        );
+                    });
+                    if (order.cart){
+                        await User.updateOne(
+                            { _id: user.id },
+                            {
+                                $set: { cart: [] }
+                            }
+                        );
+                    }
                     return res.status(200).json({ IsSuccess: true, transactionStatus: 'Paid', message: 'Transaction completed successfully.' });
                 }
                 catch(e){
@@ -530,7 +546,8 @@ export default {
                     city: req.body.address.city,
                     country: req.body.address.country,
                     postcode: req.body.address.zipCode,
-                }
+                },
+                cart: req.body.cartType == "true"
             });
             return res.status(200).json(paymentResponse.data)
         }).catch(err => next(err));
