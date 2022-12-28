@@ -371,12 +371,19 @@ export default {
             if(order.customer_id != user.id){
                 return res.status(403).json({ message: 'Forbidden' });
             }
-            if(paymentStatusResponse.data.Data.TransactionStatus == 'Failed'){
+            let transactionsList = paymentStatusResponse.data.InvoiceTransactions;
+            let transaction;
+            for(let i=0;i<transactionsList.length;i++){
+                if(transactionsList[i].PaymentId === paymentId){
+                    transaction = transactionsList[i];
+                }
+            }
+            if(transaction.TransactionStatus == 'Failed'){
                 order.paymentStatus = 'FAILED';
                 await order.save();
                 return res.status(200).json({ IsSuccess: false, transactionStatus: 'Failed', message: 'Transaction failed' });
             }
-            if(paymentStatusResponse.data.Data.TransactionStatus == 'Succss'){
+            if(transaction.TransactionStatus == 'Succss'){
                 if(order.paymentStatus === 'SUCCESSED'){
                     return res.status(200).json({ IsSuccess: true, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
                 }
@@ -439,7 +446,7 @@ export default {
                     return res.status(200).json({ IsSuccess: false, transactionStatus: 'Succss', message: 'Transaction successfully, but Error while creating shipment. Please contact support.' });
                 }
             }
-            return res.status(200).json({ IsSuccess: false, transactionStatus: paymentStatusResponse.data.Data.TransactionStatus, message: paymentStatusResponse.data.Data.ErrorCode+": "+paymentStatusResponse.data.Data.Error });
+            return res.status(200).json({ IsSuccess: false, transactionStatus: transaction.TransactionStatus, message: transaction.ErrorCode+": "+transaction.Error });
         }).catch(err => next(err));
     },
 
