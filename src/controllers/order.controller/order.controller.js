@@ -439,7 +439,7 @@ export default {
                     return res.status(200).json({ IsSuccess: false, transactionStatus: 'Succss', message: 'Transaction successfully, but Error while creating shipment. Please contact support.' });
                 }
             }
-            return res.status(200).json({ IsSuccess: false, transactionStatus: paymentStatusResponse.data.Data.TransactionStatus, message: paymentStatusResponse.data.Data.TransactionStatus.ErrorCode+": "+paymentStatusResponse.data.Data.TransactionStatus.Error });
+            return res.status(200).json({ IsSuccess: false, transactionStatus: paymentStatusResponse.data.Data.TransactionStatus, message: paymentStatusResponse.data.Data.ErrorCode+": "+paymentStatusResponse.data.Data.Error });
         }).catch(err => next(err));
     },
 
