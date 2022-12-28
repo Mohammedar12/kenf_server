@@ -371,7 +371,7 @@ export default {
             if(order.customer_id != user.id){
                 return res.status(403).json({ message: 'Forbidden' });
             }
-            let transactionsList = paymentStatusResponse.data.InvoiceTransactions;
+            let transactionsList = paymentStatusResponse.data.Data.InvoiceTransactions;
             let transaction;
             for(let i=0;i<transactionsList.length;i++){
                 if(transactionsList[i].PaymentId === paymentId){
