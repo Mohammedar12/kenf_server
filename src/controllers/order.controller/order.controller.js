@@ -396,7 +396,7 @@ export default {
                 var data = {
                     orderId: orderId,
                     pickupLocationCode: "W-KENF-01",
-                    serviceType: "pickupFromStore",
+                    serviceType: "fastDelivery",
                     createShipment: true,
                     payment_method: "paid",
                     amount: order.totalPrice,
