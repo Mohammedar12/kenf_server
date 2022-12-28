@@ -381,7 +381,7 @@ export default {
             if(transaction.TransactionStatus == 'Failed'){
                 order.paymentStatus = 'FAILED';
                 await order.save();
-                return res.status(200).json({ IsSuccess: false, transactionStatus: 'Failed', message: 'Transaction failed' });
+                return res.status(200).json({ IsSuccess: false, transactionStatus: 'Failed', message: transaction.ErrorCode+": "+transaction.Error });
             }
             if(transaction.TransactionStatus == 'Succss'){
                 if(order.paymentStatus === 'SUCCESSED'){
