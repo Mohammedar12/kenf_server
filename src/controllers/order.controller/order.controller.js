@@ -421,7 +421,7 @@ export default {
                 };
 
                 try{
-                    let deliveryResponse = await tryotoService(createOrder,'post',data);
+                    let deliveryResponse = await tryotoService('createOrder','post',data);
                     order.order_id = deliveryResponse.data.otoId;
                     await order.save();
                     products.map(async(item) => {
