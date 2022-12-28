@@ -74,6 +74,11 @@ const orderSchema = new Schema({
         country: { type:String },
         postcode: { type:String }
     }
+    ,
+    cart: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });
