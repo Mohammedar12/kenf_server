@@ -406,10 +406,10 @@ export default {
                         name: order.deliveryInfo.name,
                         email: order.deliveryInfo.email,
                         mobile: order.deliveryInfo.mobile,
-                        address: order.deliveryInfo.street,
+                        address: order.deliveryInfo.address,
                         city: order.deliveryInfo.city,
                         country: order.deliveryInfo.country,
-                        postcode: order.deliveryInfo.zipCode,
+                        postcode: order.deliveryInfo.postcode,
                     },
                     items: products.map((item) => {
                         return {
