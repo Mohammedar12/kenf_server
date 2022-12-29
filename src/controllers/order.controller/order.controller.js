@@ -669,8 +669,8 @@ export default {
                     }
                 }
                 let options = {
-                    select: 'id order_id customer_id totalPrice created_at',
-                    sort: { created_at: -1 },
+                    select: 'id order_id customer_id totalPrice createdAt',
+                    sort: { createdAt: -1 },
                     page,
                     limit,
                     populate: {
