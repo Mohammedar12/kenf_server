@@ -277,7 +277,7 @@ export default {
             except_discounted_product: req.body.except_discounted_product,
             start_date: req.body.start_date,
             end_date: req.body.end_date,
-            password: req.body.password,
+            ...(req.body.password && req.body.password.trim().length != 0 && { password: req.body.password }),
           }
         }, {
           upsert: true

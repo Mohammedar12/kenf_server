@@ -38,6 +38,9 @@ router.route('/updateOrders')
 router.route('/delOrders')
   .delete(orderController.delOrders);
 
+router.route('/invoices/list')
+  .post(requireAuth, orderController.getInvoices);
+
 router.route('/')
   .get(orderController.getOrderList)
   .post(requireAuth, orderController.addorder)

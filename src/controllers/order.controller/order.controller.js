@@ -652,6 +652,37 @@ export default {
         } catch(error) {
             next(error);
         }
+    },
+
+    async getInvoices(req, res, next) {
+        try {
+            try {
+                let page = 1;
+                if(req.query.page){
+                    page = req.query.page;
+                }
+                let limit = 10;
+                if(req.query.limit){
+                    limit = req.query.limit;
+                    if(limit > 100){
+                        limit = 100;
+                    }
+                }
+                let options = {
+                    select: 'id order_id customer_id totalPrice created_at',
+                    sort: { created_at: -1 },
+                    page,
+                    limit,
+                    populate: 'customer_id',
+                };
+                let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED' },options);
+                return res.status(200).json(data);
+            } catch (error) {
+                next(error);
+            }
+        } catch(error) {
+            next(error);
+        }
     }
 };
 

@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseI18n from "mongoose-i18n-localize";
+import paginate from 'mongoose-paginate-v2';
 
 const orderSchema = new Schema({
     order_id: {
@@ -84,5 +85,6 @@ const orderSchema = new Schema({
 });
 
 orderSchema.plugin(mongooseI18n, { locales: ['ar', 'en'] });
+orderSchema.plugin(paginate);
 
 export default mongoose.model('order', orderSchema);
