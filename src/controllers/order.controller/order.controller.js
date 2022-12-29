@@ -405,7 +405,7 @@ export default {
                     customer: {
                         name: order.deliveryInfo.name,
                         email: order.deliveryInfo.email,
-                        mobile: order.deliveryInfo.phone,
+                        mobile: order.deliveryInfo.mobile,
                         address: order.deliveryInfo.street,
                         city: order.deliveryInfo.city,
                         country: order.deliveryInfo.country,
