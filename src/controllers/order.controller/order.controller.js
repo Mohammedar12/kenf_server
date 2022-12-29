@@ -235,7 +235,7 @@ export default {
 
             User.findOne({ [keys[0]]: query[keys[0]] })
                 .then(async (user) => {
-                    Order.find({ customer_id: user.id, deleted: false })
+                    Order.find({ customer_id: user.id, deleted: false, paymentStatus: 'SUCCESSED' })
                         .populate("products").populate("customer_id").populate("coupon_id")
                         .then((orders) => {
                             res.status(200).json(orders);
@@ -249,7 +249,7 @@ export default {
 
     async getOrderList(req, res, next) {
         try {
-            Order.find({ deleted: false })
+            Order.find({ deleted: false, paymentStatus: 'SUCCESSED' })
                 .populate("products")
                 .populate("coupon_id")
                 .populate("customer_id")
