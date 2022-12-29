@@ -673,7 +673,10 @@ export default {
                     sort: { created_at: -1 },
                     page,
                     limit,
-                    populate: 'customer_id',
+                    populate: {
+                        path: 'customer_id',
+                        select: 'billingAddress.fullname',
+                    },
                 };
                 let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED' },options);
                 return res.status(200).json(data);
