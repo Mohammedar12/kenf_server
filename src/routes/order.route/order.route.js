@@ -39,7 +39,7 @@ router.route('/delOrders')
   .delete(orderController.delOrders);
 
 router.route('/invoices/list')
-  .post(requireAuth, orderController.getInvoices);
+  .get(requireAuth, orderController.getInvoices);
 
 router.route('/')
   .get(orderController.getOrderList)
