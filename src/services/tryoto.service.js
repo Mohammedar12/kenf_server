@@ -29,7 +29,7 @@ const refreshToken = async() => {
 
 export default async(url,method,data) => {
     if(!access_token || !access_token_expire_at || (  Math.round(new Date().getTime() / 1000) > access_token_expire_at )){
-        refreshToken();
+        await refreshToken();
     }
     return await axios({
         method: method,
