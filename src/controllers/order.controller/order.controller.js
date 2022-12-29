@@ -393,7 +393,7 @@ export default {
                 let products =  await Product.find({ '_id': { $in: productIds } });
                 let date = new Date();
                 let orderId = date.getTime();
-                var data = {
+                let data = {
                     orderId: orderId,
                     pickupLocationCode: "W-KENF-01",
                     serviceType: "fastDelivery",
