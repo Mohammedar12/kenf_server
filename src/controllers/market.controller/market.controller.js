@@ -353,29 +353,29 @@ export default {
   },
   async getCouponStats(req, res, next) {
     try {
-      if (!(req.body.password && req.body.coupon)) {
-        let coupon = await Coupon.findOne({ code: req.body.code, deleted: false },{password: 0});
+      if (req.body.password && req.body.coupon) {
+        let coupon = await Coupon.findOne({ code: req.body.coupon, deleted: false });
         if(!coupon){
           return res.status(404).json({ message: 'Coupon not found' });
         }
         if(coupon.password !== req.body.password){
           return res.status(401).json({ message: 'Wrong password!' });
         }
-        let count = await Order.count({ '_id': coupon.id, paymentStatus: 'SUCCESSED' ,deleted: false });
+        let count = await Order.count({ coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false });
         let profit = 0;
         if(coupon.profit_type === 'fixed'){
           profit = count * count.profit;
         }
         if(coupon.profit_type === 'percent'){
           let totalAmount = await Order.aggregate([
-            { $match: { '_id': coupon.id, paymentStatus: 'SUCCESSED' ,deleted: false } },
+            { $match: { coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false } },
             { $group: { _id: null, amount: { $sum: "$price" } } }
           ]);
           if(totalAmount && totalAmount.length != 0){
             profit = (totalAmount[0].amount * coupon.profit) / 100;
           }
         }
-        return res.status(200).json({ count, profit });
+        return res.status(200).json({ count, profit, userName: coupon.user });
       } else {
         return res.status(400).json({ message: 'Bad request.' });
       }
