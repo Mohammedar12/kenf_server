@@ -41,6 +41,9 @@ router.route('/delOrders')
 router.route('/invoices/list')
   .get(requireAuth, orderController.getInvoices);
 
+router.route('/invoices/:id')
+  .get(requireAuth, orderController.getInvoiceById);
+  
 router.route('/')
   .get(orderController.getOrderList)
   .post(requireAuth, orderController.addorder)

@@ -656,33 +656,49 @@ export default {
 
     async getInvoices(req, res, next) {
         try {
-            try {
-                let page = 1;
-                if(req.query.page){
-                    page = req.query.page;
-                }
-                let limit = 10;
-                if(req.query.limit){
-                    limit = req.query.limit;
-                    if(limit > 100){
-                        limit = 100;
-                    }
-                }
-                let options = {
-                    select: 'id order_id customer_id totalPrice createdAt',
-                    sort: { createdAt: -1 },
-                    page,
-                    limit,
-                    populate: {
-                        path: 'customer_id',
-                        select: 'billingAddress.fullname',
-                    },
-                };
-                let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED' },options);
-                return res.status(200).json(data);
-            } catch (error) {
-                next(error);
+            let page = 1;
+            if(req.query.page){
+                page = req.query.page;
             }
+            let limit = 10;
+            if(req.query.limit){
+                limit = req.query.limit;
+                if(limit > 100){
+                    limit = 100;
+                }
+            }
+            let options = {
+                select: 'id order_id customer_id totalPrice createdAt',
+                sort: { createdAt: -1 },
+                page,
+                limit,
+                populate: {
+                    path: 'customer_id',
+                    select: 'billingAddress.fullname',
+                },
+            };
+            let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED' },options);
+            return res.status(200).json(data);
+        } catch(error) {
+            next(error);
+        }
+    },
+
+    async getInvoiceById(req, res, next) {
+        try {
+            let id;
+            if(req.params.id){
+                return res.status(400).json({ message: 'Bad request' });
+            }
+            id = req.params.id;
+            let order = await Order.findOne({ '_id': id, deleted: false, paymentStatus: 'SUCCESSED' })
+                                .populate("products")
+                                .populate("customer_id")
+                                .populate("coupon_id");
+            if(!order){
+                return res.status(404).json({ message: "Invoice not found" });
+            }
+            return res.status(200).json(order);
         } catch(error) {
             next(error);
         }
