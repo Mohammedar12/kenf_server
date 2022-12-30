@@ -361,14 +361,14 @@ export default {
         if(coupon.password !== req.body.password){
           return res.status(401).json({ message: 'Wrong password!' });
         }
-        let count = await Order.count({ '_id': coupon.id, paymentStatus: 'SUCCESSED' ,deleted: false });
+        let count = await Order.count({ coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false });
         let profit = 0;
         if(coupon.profit_type === 'fixed'){
           profit = count * count.profit;
         }
         if(coupon.profit_type === 'percent'){
           let totalAmount = await Order.aggregate([
-            { $match: { '_id': coupon.id, paymentStatus: 'SUCCESSED' ,deleted: false } },
+            { $match: { coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false } },
             { $group: { _id: null, amount: { $sum: "$price" } } }
           ]);
           if(totalAmount && totalAmount.length != 0){
