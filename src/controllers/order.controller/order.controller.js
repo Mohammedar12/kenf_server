@@ -546,6 +546,8 @@ export default {
                 price: totalShoppingBag,
                 totalPrice: totalPrice,
                 discountValue: discount,
+                shipping_id: req.body.shippingId,
+                shippingPrice: shipping.price,
                 paymentStatus: 'PENDING',
                 paymentId: paymentResponse.data.Data.InvoiceId,
                 deliveryInfo: {

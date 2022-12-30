@@ -12,6 +12,14 @@ const orderSchema = new Schema({
         type: Boolean,
         default: false
     },
+    shipping_id: {
+        type: Number,
+        ref: 'shipping'
+    },
+    shippingPrice: {
+        type: Number,
+        default: 0
+    },
     customer_id: {
         type: Object(String),
         ref: 'user',
