@@ -354,7 +354,7 @@ export default {
   async getCouponStats(req, res, next) {
     try {
       if (req.body.password && req.body.coupon) {
-        let coupon = await Coupon.findOne({ code: req.body.coupon, deleted: false },{password: 0});
+        let coupon = await Coupon.findOne({ code: req.body.coupon, deleted: false });
         if(!coupon){
           return res.status(404).json({ message: 'Coupon not found' });
         }
