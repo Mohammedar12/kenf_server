@@ -545,6 +545,7 @@ export default {
                 ...(coupon && { coupon_id: coupon.id }),
                 price: totalShoppingBag,
                 totalPrice: totalPrice,
+                tax: tax,
                 discountValue: discount,
                 shipping_id: req.body.shippingId,
                 shippingPrice: shipping.price,
@@ -679,7 +680,7 @@ export default {
                     select: 'billingAddress.fullname',
                 },
             };
-            let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED' },options);
+            let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED', $and: [ { $ne: { status: 'WAITING' } },{ $ne: { status: 'REJECTED' } },{ $ne: { status: 'CANCELED' } } ] },options);
             return res.status(200).json(data);
         } catch(error) {
             next(error);
