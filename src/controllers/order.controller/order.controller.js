@@ -680,7 +680,7 @@ export default {
                     select: 'billingAddress.fullname',
                 },
             };
-            let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED', $and: [ { $ne: { status: 'WAITING' } },{ $ne: { status: 'REJECTED' } },{ $ne: { status: 'CANCELED' } } ] },options);
+            let data = await Order.paginate({ deleted: false, paymentStatus: 'SUCCESSED', $and: [ { status: { $ne: 'WAITING' } },{ status: { $ne: 'REJECTED' } },{ status: { $ne: 'CANCELED' } } ] },options);
             return res.status(200).json(data);
         } catch(error) {
             next(error);
