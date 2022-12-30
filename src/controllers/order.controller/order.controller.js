@@ -687,7 +687,7 @@ export default {
     async getInvoiceById(req, res, next) {
         try {
             let id;
-            if(req.params.id){
+            if(!req.params.id){
                 return res.status(400).json({ message: 'Bad request' });
             }
             id = req.params.id;
