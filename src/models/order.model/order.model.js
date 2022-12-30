@@ -16,6 +16,10 @@ const orderSchema = new Schema({
         type: Number,
         ref: 'shipping'
     },
+    tax: {
+        type: Number,
+        default: 0
+    },
     shippingPrice: {
         type: Number,
         default: 0
@@ -26,8 +30,8 @@ const orderSchema = new Schema({
         required: true
     },
     products: {
-      type: [Number],
-      ref: 'product'
+        type: [Number],
+        ref: 'product'
     },
     status: {
         type: String,
@@ -35,11 +39,11 @@ const orderSchema = new Schema({
             'ACCEPTED',
             'REJECTED',
             'CANCELED',
-            'SHIPPED','PREPARED','HAND_OVERED',
+            'SHIPPED', 'PREPARED', 'HAND_OVERED',
             'DELIVERED'],
         default: 'WAITING'
     },
-    rejectReason:{
+    rejectReason: {
         type: String
     },
     paymentMethod: {
@@ -48,40 +52,40 @@ const orderSchema = new Schema({
     },
     offer_id: {
         type: Number,
-        ref:'offer'
+        ref: 'offer'
     },
-    coupon_id:{
+    coupon_id: {
         type: Object(Number),
-        ref:'coupon'
+        ref: 'coupon'
     },
-    price:{
+    price: {
         type: Number
     },
-    totalPrice:{
+    totalPrice: {
         type: Number
     },
-    discountValue:{
+    discountValue: {
         type: Number,
-        default:0
+        default: 0
     },
-    checkoutId:{
-        type:String
+    checkoutId: {
+        type: String
     },
-    paymentId:{
-        type:String
+    paymentId: {
+        type: String
     },
-    paymentStatus:{
-        type:String,
-        enum:['PENDING','FAILED','SUCCESSED','REFUNDED'],
+    paymentStatus: {
+        type: String,
+        enum: ['PENDING', 'FAILED', 'SUCCESSED', 'REFUNDED'],
     },
     deliveryInfo: {
-        name: { type:String },
-        email: { type:String },
-        mobile: { type:String },
-        address: { type:String },
-        city: { type:String },
-        country: { type:String },
-        postcode: { type:String }
+        name: { type: String },
+        email: { type: String },
+        mobile: { type: String },
+        address: { type: String },
+        city: { type: String },
+        country: { type: String },
+        postcode: { type: String }
     }
     ,
     cart: {
