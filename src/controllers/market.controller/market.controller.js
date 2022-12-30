@@ -375,7 +375,7 @@ export default {
             profit = (totalAmount[0].amount * coupon.profit) / 100;
           }
         }
-        return res.status(200).json({ count, profit });
+        return res.status(200).json({ count, profit, userName: coupon.user });
       } else {
         return res.status(400).json({ message: 'Bad request.' });
       }
