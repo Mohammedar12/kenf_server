@@ -440,7 +440,7 @@ export default {
                             }
                         );
                     }
-                    return res.status(200).json({ IsSuccess: true, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
+                    return res.status(200).json({ IsSuccess: true, orderId: order.order_id, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
                 }
                 catch(e){
                     console.log(e);
