@@ -443,6 +443,7 @@ export default {
                     return res.status(200).json({ IsSuccess: true, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
                 }
                 catch(e){
+                    console.log(e);
                     return res.status(200).json({ IsSuccess: false, transactionStatus: 'Succss', message: 'Transaction successfully, but Error while creating shipment. Please contact support.' });
                 }
             }
