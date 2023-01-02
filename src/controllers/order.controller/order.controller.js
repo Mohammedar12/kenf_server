@@ -385,7 +385,7 @@ export default {
             }
             if(transaction.TransactionStatus == 'Succss'){
                 if(order.paymentStatus === 'SUCCESSED'){
-                    return res.status(200).json({ IsSuccess: true, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
+                    return res.status(200).json({ IsSuccess: true, orderId: order.order_id, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
                 }
                 order.paymentStatus = 'SUCCESSED';
                 await order.save();
