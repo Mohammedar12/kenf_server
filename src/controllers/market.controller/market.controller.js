@@ -382,5 +382,34 @@ export default {
     } catch (error) {
       next(error);
     }
+  },
+  async getCouponStatsAdmin(req, res, next) {
+    try {
+      if (req.query.id) {
+        let coupon = await Coupon.findOne({ _id: req.query.id });
+        if(!coupon){
+          return res.status(404).json({ message: 'Coupon not found' });
+        }
+        let count = await Order.count({ coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false });
+        let profit = 0;
+        if(coupon.profit_type === 'fixed'){
+          profit = count * count.profit;
+        }
+        if(coupon.profit_type === 'percent'){
+          let totalAmount = await Order.aggregate([
+            { $match: { coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false } },
+            { $group: { _id: null, amount: { $sum: "$price" } } }
+          ]);
+          if(totalAmount && totalAmount.length != 0){
+            profit = (totalAmount[0].amount * coupon.profit) / 100;
+          }
+        }
+        return res.status(200).json({ count, profit, userName: coupon.user, sales: 0 });
+      } else {
+        return res.status(400).json({ message: 'Bad request.' });
+      }
+    } catch (error) {
+      next(error);
+    }
   }
 }
