@@ -395,16 +395,16 @@ export default {
         if(coupon.profit_type === 'fixed'){
           profit = count * count.profit;
         }
+        let totalAmount = await Order.aggregate([
+          { $match: { coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false } },
+          { $group: { _id: null, amount: { $sum: "$price" } } }
+        ]);
         if(coupon.profit_type === 'percent'){
-          let totalAmount = await Order.aggregate([
-            { $match: { coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false } },
-            { $group: { _id: null, amount: { $sum: "$price" } } }
-          ]);
           if(totalAmount && totalAmount.length != 0){
             profit = (totalAmount[0].amount * coupon.profit) / 100;
           }
         }
-        return res.status(200).json({ count, profit, userName: coupon.user, sales: 0 });
+        return res.status(200).json({ count, profit, userName: coupon.user, sales: (totalAmount && totalAmount.length != 0) ? totalAmount[0].amount : 0 });
       } else {
         return res.status(400).json({ message: 'Bad request.' });
       }
