@@ -107,7 +107,7 @@ export default {
         "numbers": ${req.body.phone},
         "userSender": "kenf",
         "apiKey": "42808216411af0ea80dba6e349880a21",
-        "msg": "${confirmCode} is your OTP for KENF.\n@104.248.239.195 ${confirmCode}"
+        "msg": "${confirmCode} is your OTP for KENF.\n@104.248.239.195 #${confirmCode}"
       }`;
 
       const request = httpRequest.request('https://www.msegat.com/gw/sendsms.php', options, response => {
