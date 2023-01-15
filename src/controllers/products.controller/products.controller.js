@@ -309,19 +309,19 @@ export default {
       };
       if(req.query.categories){
         let categories = JSON.parse(req.query.categories);
-        if(isArray(categories)){
+        if(Array.isArray(categories)){
             query.category_id = { $in: categories };
         }
       }
       if(req.query.groups){
         let groups = JSON.parse(req.query.groups);
-        if(isArray(groups)){
+        if(Array.isArray(groups)){
             query.group_id = { $in: groups };
         }
       }
       if(req.query.shops){
         let shops = JSON.parse(req.query.shops);
-        if(isArray(shops)){
+        if(Array.isArray(shops)){
             query.shop_id = { $in: shops };
         }
       }
