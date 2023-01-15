@@ -8,6 +8,8 @@ router.route('/').get(productsController.getProduct)
   .post(requireAuth, productsController.validateProduct(), productsController.product)
   .delete(requireAuth, productsController.delProduct);
 
+router.route('/admin').get(requireAuth,productsController.getProductAdmin);
+
 router.route('/visit').post(productsController.addVisit);
 router.route('/filter').post(requireAuth, productsController.filtredProducts);
 router.route('/generateBarcode').post(requireAuth, productsController.generateBarcodeProducts);

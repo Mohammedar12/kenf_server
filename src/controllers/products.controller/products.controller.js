@@ -287,4 +287,29 @@ export default {
       next(error);
     }
   },
+  async getProductAdmin(req, res, next) {
+    try {
+      let page = 1;
+      if(req.query.page){
+          page = req.query.page;
+      }
+      let limit = 10;
+      if(req.query.limit){
+          limit = req.query.limit;
+          if(limit > 100){
+              limit = 100;
+          }
+      }
+      let options = {
+          sort: { createdAt: -1 },
+          page,
+          limit,
+          populate: ['unit_id','images','group_id','shop_id','purity_id','category_id'],
+      };
+      let data = await Product.paginate({ deleted: false },options);
+      return res.status(200).json(data);
+    } catch(error) {
+      next(error);
+    }
+  }
 };
