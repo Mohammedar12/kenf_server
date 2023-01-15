@@ -121,5 +121,6 @@ productSchema.plugin(autoIncrementSQ, {
   id: "product_id",
   inc_field: "_id"
 });
+productSchema.plugin(paginate);
 
 export default mongoose.model('product', productSchema);
