@@ -289,6 +289,7 @@ export default {
   },
   async getProductAdmin(req, res, next) {
     try {
+      let query = { deleted: false };
       let page = 1;
       if(req.query.page){
           page = req.query.page;
@@ -306,7 +307,28 @@ export default {
           limit,
           populate: ['unit_id','images','group_id','shop_id','purity_id','category_id'],
       };
-      let data = await Product.paginate({ deleted: false },options);
+      if(req.query.categories){
+        let categories = JSON.parse(req.query.categories);
+        if(isArray(categories)){
+            query.category_id = { $in: categories };
+        }
+      }
+      if(req.query.groups){
+        let groups = JSON.parse(req.query.groups);
+        if(isArray(groups)){
+            query.group_id = { $in: groups };
+        }
+      }
+      if(req.query.shops){
+        let shops = JSON.parse(req.query.shops);
+        if(isArray(shops)){
+            query.shop_id = { $in: shops };
+        }
+      }
+      if(req.query.search){
+        query["$text"] = {$search: req.query.search.toLowerCase()};
+      }
+      let data = await Product.paginate(query,options);
       return res.status(200).json(data);
     } catch(error) {
       next(error);

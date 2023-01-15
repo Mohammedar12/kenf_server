@@ -4,7 +4,7 @@ import request from "request";
 import User from "../../models/user.model/user.model";
 import Order from "../../models/order.model/order.model";
 import Product from '../../models/products.model/products.model';
-import { checkValidations } from "../../helpers/CheckMethods";
+import { checkValidations, isArray } from "../../helpers/CheckMethods";
 import Shipping from '../../models/settings.model/shipping.model';
 import Coupon from '../../models/marketing.model/coupon.model';
 import i18n from "i18n";

@@ -105,7 +105,7 @@ const productSchema = new Schema({
 }, {
   timestamps: true
 });
-
+productSchema.index({'$**': 'text'});
 productSchema.set('toJSON', {
   transform: function(doc, ret, options) {
     ret.id = ret._id;
