@@ -1,6 +1,7 @@
 import mongoose, {
   Schema
 } from 'mongoose';
+import paginate from 'mongoose-paginate-v2';
 import mongooseI18n from 'mongoose-i18n-localize'
 
 const autoIncrementSQ = require('mongoose-sequence')(mongoose);
