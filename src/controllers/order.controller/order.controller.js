@@ -696,11 +696,15 @@ export default {
             }
             id = req.params.id;
             let order = await Order.findOne({ '_id': id, deleted: false, paymentStatus: 'SUCCESSED' })
-                                .populate("products")
+                                .populate({
+                                    path: 'products',
+                                    populate: {
+                                        path: 'purity_id'
+                                    }
+                                })
                                 .populate("customer_id")
                                 .populate("coupon_id")
-                                .populate("shipping_id")
-                                .populate("products.purity_id");
+                                .populate("shipping_id");
             if(!order){
                 return res.status(404).json({ message: "Invoice not found" });
             }
