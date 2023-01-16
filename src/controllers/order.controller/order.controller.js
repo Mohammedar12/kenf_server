@@ -699,7 +699,8 @@ export default {
                                 .populate("products")
                                 .populate("customer_id")
                                 .populate("coupon_id")
-                                .populate("shipping_id");
+                                .populate("shipping_id")
+                                .populate("products.purity_id");
             if(!order){
                 return res.status(404).json({ message: "Invoice not found" });
             }
