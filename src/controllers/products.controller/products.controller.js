@@ -84,6 +84,9 @@ export default {
       body('images').optional().withMessage(() => {
         return i18n.__('phoneRequired')
       }),
+      body('mainImage').optional().withMessage(() => {
+        return i18n.__('phoneRequired')
+      }),
     ];
     return validations;
   },
@@ -115,6 +118,7 @@ export default {
             isExclusive: req.body.isExclusive,
             color: req.body.color,
             images: typeof req.body.images[0] == 'object' ? req.body.images.map(item => item.id) : req.body.images,
+            mainImage:  req.body.req.body.mainImage,
           }
         });
 
@@ -141,6 +145,7 @@ export default {
           isExclusive: validation.isExclusive,
           color: validation.color,
           images: validation.images,
+          mainImage:  validation.mainImage,
         });
         res.status(200).send(newGroupUnit);
 

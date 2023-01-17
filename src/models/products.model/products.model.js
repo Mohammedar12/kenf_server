@@ -64,6 +64,10 @@ const productSchema = new Schema({
     type: [Number],
     ref: 'upload',
   },
+  mainImage: {
+    type: [Number],
+    ref: 'upload',
+  },
   meta: {
     title: String,
     keywords: [String],
