@@ -118,7 +118,7 @@ export default {
             isExclusive: req.body.isExclusive,
             color: req.body.color,
             images: typeof req.body.images[0] == 'object' ? req.body.images.map(item => item.id) : req.body.images,
-            mainImage:  req.body.req.body.mainImage,
+            mainImage:  req.body.mainImage,
           }
         });
 
