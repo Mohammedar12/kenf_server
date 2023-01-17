@@ -65,7 +65,7 @@ const productSchema = new Schema({
     ref: 'upload',
   },
   mainImage: {
-    type: [Number],
+    type: Number,
     ref: 'upload',
   },
   meta: {
