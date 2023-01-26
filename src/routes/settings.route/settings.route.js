@@ -60,6 +60,9 @@ router.route('/cart')
 router.route('/delCart')
   .post(settingsController.delCart);
 
+router.route('/delCart/noAuth')
+  .post(settingsController.delCartNoAuth);
+
 router.route('/favorite')
   .get(settingsController.getFavorite)
   .post(settingsController.setFavorite);
