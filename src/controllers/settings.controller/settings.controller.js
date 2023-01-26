@@ -275,6 +275,36 @@ export default {
         next(error);
       }
   },
+  
+  async delCartNoAuth(req, res, next) {
+
+      const removeCart = req.body.removeCart;
+      const savedCart = req.body.savedCart;
+
+      let concatCart = [];
+
+      if (savedCart != null) {
+          const decodeCart = jwt.verify(savedCart, process.env.JWT_SECRET);
+          concatCart = decodeCart.cart;
+          for(let i=0;i<concatCart.length;i++){
+            if(concatCart[i].id === removeCart){
+              concatCart.splice(i, 1);
+              break
+            }
+          }
+      }
+
+      var token = jwt.sign(
+          { cart: concatCart },
+          process.env.JWT_SECRET, 
+          {
+              expiresIn: 86400, // 24 hours
+          }
+      );
+
+      res.status(200).json(token);
+
+  },
 
   // ----------------------- Encode Cart ------------------------
 
@@ -287,7 +317,6 @@ export default {
 
       if (savedCart != null) {
           const decodeCart = jwt.verify(savedCart, process.env.JWT_SECRET);
-
           concatCart = concatCart.concat(decodeCart.cart);
       }
 
