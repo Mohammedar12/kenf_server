@@ -286,7 +286,7 @@ export default {
           const decodeCart = jwt.verify(savedCart, process.env.JWT_SECRET);
           concatCart = decodeCart.cart;
           for(let i=0;i<concatCart.length;i++){
-            if(concatCart[i] === removeCart){
+            if(concatCart[i].id === removeCart){
               concatCart.splice(i, 1);
               break;
             }
