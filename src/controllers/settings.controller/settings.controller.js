@@ -292,7 +292,6 @@ export default {
             }
           }
       }
-    console.log(concatCart);
 
       var token = jwt.sign(
           { cart: concatCart },
