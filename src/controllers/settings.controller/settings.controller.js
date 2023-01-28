@@ -277,7 +277,6 @@ export default {
   },
   
   async delCartNoAuth(req, res, next) {
-      return res.status(200).json("asdsdf");
       const removeCart = req.body.removeCart;
       const savedCart = req.body.savedCart;
 
@@ -302,7 +301,7 @@ export default {
           }
       );
 
-      res.status(200).json(token);
+      return res.status(200).json(token);
 
   },
 
