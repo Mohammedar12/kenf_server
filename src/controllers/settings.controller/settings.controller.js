@@ -288,10 +288,11 @@ export default {
           for(let i=0;i<concatCart.length;i++){
             if(concatCart[i] === removeCart){
               concatCart.splice(i, 1);
-              break
+              break;
             }
           }
       }
+    console.log(concatCart);
 
       var token = jwt.sign(
           { cart: concatCart },
