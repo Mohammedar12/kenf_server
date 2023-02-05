@@ -726,9 +726,20 @@ export default {
       let user = req.user;
       let itemGroups = await ItemCategory.find({
         deleted: false
-      }).populate('images');;
+      }).populate('images');
       res.status(200).send(itemGroups);
 
+    } catch (error) {
+      next(error);
+    }
+  },
+  async getItemCategoryById(req, res, next) {
+    try {
+      let itemGroups = await ItemCategory.findOne({
+        deleted: false,
+        id: req.params.id
+      }).populate('images').populate('hero_product');
+      res.status(200).send(itemGroups);
     } catch (error) {
       next(error);
     }
