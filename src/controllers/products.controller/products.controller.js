@@ -217,6 +217,9 @@ export default {
           special_cat = await items_category.findOne({ hero_product: id });
           itemGroups.special_cat = special_cat;
         }
+        else{
+          itemGroups.special_cat = null;
+        }
       }
 
       res.status(200).send(itemGroups ? itemGroups : {});
