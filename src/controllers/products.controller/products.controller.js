@@ -212,18 +212,13 @@ export default {
         itemGroups = await Product.findOne({
           _id: id,
           deleted: false
-        }).populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id');
+        }).populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id').lean();
         if(itemGroups){
           special_cat = await items_category.findOne({ hero_product: id });
-          itemGroups = {
-            ...itemGroups,
-            special_cat
-          };
+          itemGroups.special_cat = special_cat;
         }
         else{
-          itemGroups = {
-            ...itemGroups
-          };
+          itemGroups.special_cat = null;
         }
       }
 
