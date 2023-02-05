@@ -737,7 +737,7 @@ export default {
     try {
       let itemGroups = await ItemCategory.findOne({
         deleted: false,
-        id: req.params.id
+        _id: req.params.id
       }).populate('images').populate('hero_product');
       res.status(200).send(itemGroups);
     } catch (error) {
