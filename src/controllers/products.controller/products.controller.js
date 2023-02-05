@@ -4,6 +4,7 @@ import User from '../../models/user.model/user.model';
 import ApiError from '../../helpers/ApiError';
 import i18n from 'i18n'
 import Product from '../../models/products.model/products.model';
+import items_category from '../../models/settings.model/items_category.model';
 import {
   checkValidations
 } from '../../helpers/CheckMethods';
@@ -121,7 +122,24 @@ export default {
             mainImage:  req.body.mainImage,
           }
         });
-
+        if(req.body.isSpecial){
+          if(req.body.special_cat_id){
+            let special_cat = await items_category.findOne({ hero_product: validation.id });
+            if(special_cat){
+              if(special_cat._id !== req.body.special_cat_id){
+                special_cat.hero_product = null;
+                await special_cat.save();
+              }
+            }
+            if( (!special_cat) || special_cat._id !== req.body.special_cat_id ){
+              let special_cat_new = await items_category.findOne({ _id: req.body.special_cat_id });
+              if(special_cat_new){
+                special_cat_new.hero_product = validation.id;
+                special_cat_new.save();
+              }
+            }
+          }
+        }
         return res.status(200).json({value: updateProduct});
 
       } else {
@@ -184,7 +202,7 @@ export default {
     try {
       // let user = req.user;
       let itemGroups = {};
-
+      let special_cat;
       if (!req.query.id) {
         itemGroups = await Product.find({
           deleted: false
@@ -195,9 +213,12 @@ export default {
           _id: id,
           deleted: false
         }).populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id');
+        if(itemGroups){
+          special_cat = await items_category.findOne({ hero_product: id });
+        }
       }
 
-      res.status(200).send(itemGroups ? itemGroups : {});
+      res.status(200).send(itemGroups ? itemGroups : {}, special_cat);
 
     } catch (error) {
       next(error);
