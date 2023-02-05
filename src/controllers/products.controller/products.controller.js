@@ -215,10 +215,11 @@ export default {
         }).populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id');
         if(itemGroups){
           special_cat = await items_category.findOne({ hero_product: id });
+          itemGroups.special_cat = special_cat;
         }
       }
 
-      res.status(200).send(itemGroups ? itemGroups : {}, special_cat);
+      res.status(200).send(itemGroups ? itemGroups : {});
 
     } catch (error) {
       next(error);
