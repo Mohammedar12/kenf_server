@@ -740,6 +740,9 @@ export default {
         category: req.params.cat_id,
         group: req.params.group_id
       }).populate('product');
+      if(!itemGroups){
+        return res.status(200).send({});
+      }
       res.status(200).send(itemGroups);
     } catch (error) {
       next(error);
