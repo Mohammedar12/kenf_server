@@ -127,10 +127,10 @@ export default {
             let hero_product_mapping = await category_hero_product.findOne({ product: validation.id });
             if(hero_product_mapping){
               if(hero_product_mapping.category !== req.body.special_cat_id || hero_product_mapping.group !== req.body.group_id){
-                await special_cat.remove();
+                await hero_product_mapping.remove();
               }
             }
-            if( (!special_cat) || hero_product_mapping.category !== req.body.special_cat_id || hero_product_mapping.group !== req.body.group_id){
+            if( (!hero_product_mapping) || hero_product_mapping.category !== req.body.special_cat_id || hero_product_mapping.group !== req.body.group_id){
               let hero_product_mapping_2 = await category_hero_product.findOne({ category: req.body.special_cat_id, group: req.body.group_id });
               if(hero_product_mapping_2){
                 hero_product_mapping_2.product = validation.id;
