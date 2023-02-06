@@ -26,10 +26,6 @@ const items_category = new Schema({
     type: [Number],
     ref: 'upload'
   },
-  hero_product: {
-    type: Number,
-    ref: 'product'
-  },
   isKenf: {
     type: Boolean,
     default: false,

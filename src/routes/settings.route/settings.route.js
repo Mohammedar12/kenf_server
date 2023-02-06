@@ -18,8 +18,8 @@ router.route('/items_category')
   .post(requireAuth, settingsController.validateItemCategory(), settingsController.itemCategory)
   .delete(requireAuth, settingsController.delItemCategory);
 
-router.route('/items_category/:id')
-  .get(settingsController.getItemCategoryById);
+router.route('/items_category/:group_id/:cat_id')
+  .get(settingsController.getCategoryHeroProduct);
 
 router.route('/items_size')
   .get(settingsController.getItemSize)

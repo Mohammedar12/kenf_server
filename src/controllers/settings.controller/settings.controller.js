@@ -9,6 +9,7 @@ import Purity from '../../models/settings.model/purity.model';
 import Complaints from '../../models/settings.model/complaints.model';
 import PM from '../../models/settings.model/payment_method.model';
 import OrderStatus from '../../models/settings.model/order_status.model';
+import category_hero_product from '../../models/settings.model/category_hero_product.model';
 import crypto from 'crypto';
 import Upload from '../../models/upload.model/upload.model';
 import jwt from 'jsonwebtoken';
@@ -733,12 +734,12 @@ export default {
       next(error);
     }
   },
-  async getItemCategoryById(req, res, next) {
+  async getCategoryHeroProduct(req, res, next) {
     try {
-      let itemGroups = await ItemCategory.findOne({
-        deleted: false,
-        _id: req.params.id
-      }).populate('images').populate('hero_product');
+      let itemGroups = await category_hero_product.findOne({
+        category: req.params.cat_id,
+        group: req.params.group_id
+      }).populate('product');
       res.status(200).send(itemGroups);
     } catch (error) {
       next(error);

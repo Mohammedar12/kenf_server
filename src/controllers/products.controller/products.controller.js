@@ -4,7 +4,7 @@ import User from '../../models/user.model/user.model';
 import ApiError from '../../helpers/ApiError';
 import i18n from 'i18n'
 import Product from '../../models/products.model/products.model';
-import items_category from '../../models/settings.model/items_category.model';
+import category_hero_product from '../../models/settings.model/category_hero_product.model';
 import {
   checkValidations
 } from '../../helpers/CheckMethods';
@@ -124,18 +124,20 @@ export default {
         });
         if(req.body.isSpecial){
           if(req.body.special_cat_id){
-            let special_cat = await items_category.findOne({ hero_product: validation.id });
-            if(special_cat){
-              if(special_cat._id !== req.body.special_cat_id){
-                special_cat.hero_product = null;
-                await special_cat.save();
+            let hero_product_mapping = await category_hero_product.findOne({ product: validation.id });
+            if(hero_product_mapping){
+              if(hero_product_mapping.category !== req.body.special_cat_id || hero_product_mapping.group !== req.body.group_id){
+                await special_cat.remove();
               }
             }
-            if( (!special_cat) || special_cat._id !== req.body.special_cat_id ){
-              let special_cat_new = await items_category.findOne({ _id: req.body.special_cat_id });
-              if(special_cat_new){
-                special_cat_new.hero_product = validation.id;
-                special_cat_new.save();
+            if( (!special_cat) || hero_product_mapping.category !== req.body.special_cat_id || hero_product_mapping.group !== req.body.group_id){
+              let hero_product_mapping_2 = await category_hero_product.findOne({ category: req.body.special_cat_id, group: req.body.group_id });
+              if(hero_product_mapping_2){
+                hero_product_mapping_2.product = validation.id;
+                await hero_product_mapping_2.save();
+              }
+              else{
+                await category_hero_product.create({ product: validation.id, category: req.body.special_cat_id, group: req.body.group_id });
               }
             }
           }
@@ -215,7 +217,7 @@ export default {
         }).populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id'); 
         itemGroups = itemGroups.toJSON();
         if(itemGroups){
-          special_cat = await items_category.findOne({ hero_product: id });
+          special_cat = await category_hero_product.findOne({ product: id }).populate('category').populate('group');
           itemGroups.special_cat = special_cat;
         }
         else{
