@@ -137,7 +137,7 @@ export default {
               hero_product_mapping = undefined;
             }
             if(special_cat.isKenf){
-              hero_product_mapping = await category_hero_product.findOne({ category: req.body.special_cat_id });
+              hero_product_mapping = await category_hero_product.findOne({ category: req.body.special_cat_id, group: undefined });
             }
             else{
               hero_product_mapping = await category_hero_product.findOne({ category: req.body.special_cat_id, group: req.body.group_id });
