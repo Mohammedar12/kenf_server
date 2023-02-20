@@ -369,7 +369,7 @@ export default {
         if(coupon.profit_type === 'percent'){
           let totalAmount = await Order.aggregate([
             { $match: { coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false } },
-            { $group: { _id: null, amount: { $sum: "$price" } } }
+            { $group: { _id: null, amount: { $sum: { $subtract: ["$price", "$discountValue"] } } } }
           ]);
           if(totalAmount && totalAmount.length != 0){
             profit = (totalAmount[0].amount * coupon.profit) / 100;
@@ -397,7 +397,7 @@ export default {
         }
         let totalAmount = await Order.aggregate([
           { $match: { coupon_id: coupon._id, paymentStatus: 'SUCCESSED' ,deleted: false } },
-          { $group: { _id: null, amount: { $sum: "$price" } } }
+          { $group: { _id: null, amount: { $sum: { $subtract: ["$price", "$discountValue"]  } } } }
         ]);
         if(coupon.profit_type === 'percent'){
           if(totalAmount && totalAmount.length != 0){
