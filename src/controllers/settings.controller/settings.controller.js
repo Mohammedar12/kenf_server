@@ -737,7 +737,7 @@ export default {
   async getCategoryHeroProduct(req, res, next) {
     try {
       let itemGroups;
-      if(req.params.group_id === 'collection'){
+      if(!req.params.group_id){
         let cat = await ItemCategory.findOne({ _id: req.params.cat_id });
         if(cat && cat.isKenf){
           itemGroups = await category_hero_product.findOne({
