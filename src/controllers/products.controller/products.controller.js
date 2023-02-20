@@ -4,6 +4,7 @@ import User from '../../models/user.model/user.model';
 import ApiError from '../../helpers/ApiError';
 import i18n from 'i18n'
 import Product from '../../models/products.model/products.model';
+import ItemsCategory from '../../models/settings.model/items_category.model';
 import category_hero_product from '../../models/settings.model/category_hero_product.model';
 import {
   checkValidations
@@ -124,26 +125,37 @@ export default {
         });
         if(req.body.isSpecial){
           if(req.body.special_cat_id){
+            let special_cat = await ItemsCategory.findOne({ _id: req.body.special_cat_id });
+            if(!special_cat){
+              return res.status(400).json({message: "Special category not found"});
+            }
             let hero_product_mapping = await category_hero_product.findOne({ product: validation.id });
-            if(hero_product_mapping){
-              if(hero_product_mapping.category !== req.body.special_cat_id || hero_product_mapping.group !== req.body.group_id){
+            if(hero_product_mapping && hero_product_mapping.category !== req.body.special_cat_id){
+              if( ( special_cat.isKenf && hero_product_mapping.group !==  req.body.group_id) || ( !special_cat.isKenf )){
                 await hero_product_mapping.remove();
               }
+              hero_product_mapping = undefined;
             }
-            if( (!hero_product_mapping) || hero_product_mapping.category !== req.body.special_cat_id || hero_product_mapping.group !== req.body.group_id){
-              let hero_product_mapping_2 = await category_hero_product.findOne({ category: req.body.special_cat_id, group: req.body.group_id });
-              if(hero_product_mapping_2){
-                hero_product_mapping_2.product = validation.id;
-                await hero_product_mapping_2.save();
-              }
-              else{
+            if(special_cat.isKenf){
+              hero_product_mapping = await category_hero_product.findOne({ category: req.body.special_cat_id });
+            }
+            else{
+              hero_product_mapping = await category_hero_product.findOne({ category: req.body.special_cat_id, group: req.body.group_id });
+            }
+            if(hero_product_mapping){
+              hero_product_mapping.product = validation.id;
+              await hero_product_mapping.save();
+            }
+            else{
+              if(special_cat.isKenf){
+                await category_hero_product.create({ product: validation.id, category: req.body.special_cat_id });
+              } else{
                 await category_hero_product.create({ product: validation.id, category: req.body.special_cat_id, group: req.body.group_id });
               }
             }
           }
         }
         return res.status(200).json({value: updateProduct});
-
       } else {
         let newGroupUnit = await Product.create({
           _id: false,

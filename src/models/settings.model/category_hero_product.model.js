@@ -18,8 +18,7 @@ import mongoose, {
     },
     group: {
         type: Number,
-        ref: 'items_group',
-        required: true
+        ref: 'items_group'
     }
   }, {
     timestamps: true

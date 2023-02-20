@@ -736,10 +736,21 @@ export default {
   },
   async getCategoryHeroProduct(req, res, next) {
     try {
-      let itemGroups = await category_hero_product.findOne({
-        category: req.params.cat_id,
-        group: req.params.group_id
-      }).populate('product');
+      let itemGroups;
+      if(req.params.group_id === 'collection'){
+        let cat = await ItemCategory.findOne({ _id: req.params.cat_id });
+        if(cat && cat.isKenf){
+          itemGroups = await category_hero_product.findOne({
+            category: req.params.cat_id
+          }).populate('product');
+        }
+      }
+      else{
+        itemGroups = await category_hero_product.findOne({
+          category: req.params.cat_id,
+          group: req.params.group_id
+        }).populate('product');
+      }
       if(!itemGroups){
         return res.status(200).send({});
       }
