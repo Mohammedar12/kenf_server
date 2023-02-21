@@ -53,6 +53,11 @@ const coupon = new Schema({
   end_date: {
     type: Date
   },
+  freeShipping: {
+    type: [Number],
+    ref: 'shipping',
+    default: null
+  },
   deleted: {
     type: Boolean,
     default: false
