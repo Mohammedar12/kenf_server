@@ -491,6 +491,7 @@ export default {
         let tax = 0;
         let totalPrice = 0;
         let discount = 0;
+        let shippingPrice = shipping.price;
         products.map(product => {
             totalShoppingBag += product.extra_price;
         });
@@ -508,12 +509,16 @@ export default {
             } else {
                 discount = coupon.discount;
             }
+            if(coupon.freeShipping && coupon.freeShipping.length != 0){ 
+                if(coupon.freeShipping.includes(req.body.shippingId))
+                    shippingPrice = 0;
+            }
         }
         let priceAfterDiscount = totalShoppingBag - discount;
         if(priceAfterDiscount < 0)
             priceAfterDiscount = 0;
         tax = priceAfterDiscount * 0.15;
-        totalPrice = priceAfterDiscount + tax + shipping.price;
+        totalPrice = priceAfterDiscount + tax + shippingPrice;
         var config = {
             method: "post",
             url: baseURL + "/v2/ExecutePayment",
@@ -549,7 +554,7 @@ export default {
                 tax: tax,
                 discountValue: discount,
                 shipping_id: req.body.shippingId,
-                shippingPrice: shipping.price,
+                shippingPrice: shippingPrice,
                 paymentStatus: 'PENDING',
                 paymentId: paymentResponse.data.Data.InvoiceId,
                 deliveryInfo: {
