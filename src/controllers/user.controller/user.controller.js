@@ -134,16 +134,18 @@ export default {
       headers: {
         'Content-Type': 'application/json'
       },
+      auth: {
+        bearer: "9e9551803fddd1b62677290a65922701",
+      },
     };
 
     const confirmCode = Math.floor(1000 + Math.random() * 9000);
     console.log(confirmCode)
 
     const data = `{
-      "numbers": ${req.body.phone},
+      "recipients": ${req.body.phone},
       "sender": "Taqnyat.sa",
-      "apiKey": "9e9551803fddd1b62677290a65922701",
-      "msg": "test kenf sedner "
+      "body": "test kenf sedner "
     }`;
     // "msg": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
 
