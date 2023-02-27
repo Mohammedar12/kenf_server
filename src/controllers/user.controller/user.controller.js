@@ -130,15 +130,16 @@ export default {
   // },
   async PhoneVerification(req, res, next) {
     const options = {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 9e9551803fddd1b62677290a65922701'
       },
-      auth: {
-        bearer: "9e9551803fddd1b62677290a65922701",
-      },
+      // auth: {
+      //   bearer: "9e9551803fddd1b62677290a65922701",
+      // },
     };
-
+    
     const confirmCode = Math.floor(1000 + Math.random() * 9000);
     console.log(confirmCode)
 
@@ -149,9 +150,9 @@ export default {
     }`;
     // "msg": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
 
-    const request = httpRequest.request('https://api.taqnyat.sa/v1/messages', options, response => {
+    const request = httpRequest.request('https://api.taqnyat.sa/system/status', options, response => {
       let responseData = '';
-
+      
       response.on('data', dataChunk => {
         responseData += dataChunk;
       });
@@ -161,6 +162,7 @@ export default {
     });
 
     request.on('error', error => console.log('ERROR', error));
+    request.on('connect', ss => console.log('ERROR', ss));
 
     request.write(data);
     request.end();
