@@ -146,9 +146,8 @@ export default {
     const data = `{
       "recipients": ${req.body.phone},
       "sender": "Taqnyat.sa",
-      "body": "test kenf sedner "
+      "body": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
     }`;
-    // "msg": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
 
     const request = httpRequest.request('https://api.taqnyat.sa/v1/messages', options, response => {
       let responseData = '';
@@ -162,7 +161,6 @@ export default {
     });
 
     request.on('error', error => console.log('ERROR', error));
-    request.on('connect', ss => console.log('ERROR', ss));
 
     request.write(data);
     request.end();
