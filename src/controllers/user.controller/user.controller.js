@@ -91,44 +91,80 @@ export default {
 
     // -------------------- Phone Verification --------------------
 
-    async PhoneVerification(req, res, next) {
-      const options = {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      };
+  //   async PhoneVerification(req, res, next) {
+  //     const options = {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //     };
 
-      const confirmCode = Math.floor(1000 + Math.random() * 9000);
-      console.log(confirmCode)
+  //     const confirmCode = Math.floor(1000 + Math.random() * 9000);
+  //     console.log(confirmCode)
 
-      const data = `{
-        "userName": "kenf",
-        "numbers": ${req.body.phone},
-        "userSender": "kenf",
-        "apiKey": "42808216411af0ea80dba6e349880a21",
-        "msg": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
-      }`;
+  //     const data = `{
+  //       "userName": "kenf",
+  //       "numbers": ${req.body.phone},
+  //       "userSender": "kenf",
+  //       "apiKey": "42808216411af0ea80dba6e349880a21",
+  //       "msg": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
+  //     }`;
 
-      const request = httpRequest.request('https://www.msegat.com/gw/sendsms.php', options, response => {
-        let responseData = '';
+  //     const request = httpRequest.request('https://www.msegat.com/gw/sendsms.php', options, response => {
+  //       let responseData = '';
 
-        response.on('data', dataChunk => {
-          responseData += dataChunk;
-        });
-        response.on('end', () => {
-          console.log('Response: ', responseData);
-        });
+  //       response.on('data', dataChunk => {
+  //         responseData += dataChunk;
+  //       });
+  //       response.on('end', () => {
+  //         console.log('Response: ', responseData);
+  //       });
+  //     });
+
+  //     request.on('error', error => console.log('ERROR', error));
+
+  //     request.write(data);
+  //     request.end();
+
+  //     res.status(200).json({ code: confirmCode });
+  // },
+  async PhoneVerification(req, res, next) {
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    };
+
+    const confirmCode = Math.floor(1000 + Math.random() * 9000);
+    console.log(confirmCode)
+
+    const data = `{
+      "numbers": ${req.body.phone},
+      "sender": "Taqnyat.sa",
+      "apiKey": "9e9551803fddd1b62677290a65922701",
+      "msg": "test kenf sedner "
+    }`;
+    // "msg": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
+
+    const request = httpRequest.request('https://api.taqnyat.sa/v1/messages', options, response => {
+      let responseData = '';
+
+      response.on('data', dataChunk => {
+        responseData += dataChunk;
       });
+      response.on('end', () => {
+        console.log('Response: ', responseData);
+      });
+    });
 
-      request.on('error', error => console.log('ERROR', error));
+    request.on('error', error => console.log('ERROR', error));
 
-      request.write(data);
-      request.end();
+    request.write(data);
+    request.end();
 
-      res.status(200).json({ code: confirmCode });
-  },
-
+    res.status(200).json({ code: confirmCode });
+},
   // --------------------------- Register User ---------------------------
 
   async registerUser(req, res, next) {
