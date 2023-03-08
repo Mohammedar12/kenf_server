@@ -146,7 +146,7 @@ export default {
         "body": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
       }`;
 
-      const request = httpRequest.request('https://www.msegat.com/gw/sendsms.php', options, response => {
+      const request = httpRequest.request('https://api.taqnyat.sa/account/balance', options, response => {
         let responseData = '';
 
         response.on('data', dataChunk => {
@@ -162,7 +162,7 @@ export default {
       request.write(data);
       request.end();
 
-      res.status(200).json({ code: confirmCode });
+      res.status(200).json({ code: responseData });
   },
 //   async PhoneVerification(req, res, next) {
 //     const options = {
