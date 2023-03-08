@@ -130,7 +130,7 @@ export default {
   // },
   async PhoneVerification(req, res, next) {
     const options = {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer 9e9551803fddd1b62677290a65922701'
@@ -149,10 +149,11 @@ export default {
       "body": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
     }`;
 
-    const request = httpRequest.request('https://api.taqnyat.sa/v1/messages', options, response => {
+    const request = httpRequest.request('https://api.taqnyat.sa/account/balance', options, response => {
       let responseData = '';
       
       response.on('data', dataChunk => {
+        console.log('Response: ', responseData);
         responseData += dataChunk;
       });
       response.on('end', () => {
