@@ -146,8 +146,8 @@ export default {
 
     const data = `{
       "recipients": ${req.body.phone},
-      "sender": "kenf",
-      "body": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode} "
+      "sender": "KENF",
+      "body": "${confirmCode} is your OTP for KENF"
     }`;
     // "msg": "${confirmCode} is your OTP for KENF.\n@kenf.sa #${confirmCode}"
 
