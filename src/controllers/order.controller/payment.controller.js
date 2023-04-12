@@ -357,7 +357,7 @@ const getPaymentStatus = catchAsync(async (req, res, next) => {
                 message: 'Order does not exist' 
             });
         }
-        if(order.customer !== convertObjectId(req.user.id)){
+        if(!order.customer.equals(convertObjectId(req.user.id))){
             return res.status(403).json({ status: 403, message: 'Forbidden' });
         }
         let transactionsList = paymentStatusResponse.data.Data.InvoiceTransactions;
