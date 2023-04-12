@@ -101,7 +101,7 @@ const executePayment = catchAsync(async(req,res,next)=>{
     for(let i=0;i<items.length;i++){
         let foundProduct = false;
         for(let j=0;j<products.length;j++){
-            if(items[i].id === products[j].id){
+            if(items[i].id.equals(products[j].id)){
                 foundProduct = true;
                 items[i].price = products[j].extra_price;
                 if(products[j].quantity < items[i].quantity){
