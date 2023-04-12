@@ -16,7 +16,7 @@ const executePayment = {
 
 const paymentWebhook = {
   body: Joi.object().keys({
-    EventType: Joi.string().required(),
+    EventType: Joi.number().integer().required(),
     Event: Joi.string().required(),
     DateTime: Joi.string().required(),
     CountryIsoCode: Joi.string().required(),
