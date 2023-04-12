@@ -87,7 +87,7 @@ const executePayment = catchAsync(async(req,res,next)=>{
                 message: "Your cart is empty!"
             });
         }
-        items = item.filter((val)=>(val.quantity !== 0));
+        items = items.filter((val)=>(val.quantity !== 0));
         productsIds = items.map((val)=>(val.id));
     }
     else{
