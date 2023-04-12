@@ -1,21 +1,23 @@
-import axios from 'axios';
-import ApiError from '../helpers/ApiError';
+const axios = require('axios');
+const ApiError = require('../helpers/ApiError');
+const logger = require('../config/logger');
+const config = require('../config/config');
 
 let access_token;
 let access_token_expire_at;
 
 const refreshToken = async() => {
     var data = {
-        refresh_token: process.env.REFRESH_TOKEN,
+        refresh_token: config.tryoto.refresh_token,
     };
-    var config = {
+    var req_config = {
         method: "post",
         url: "https://api.tryoto.com/rest/v2/refreshToken",
         headers: {},
         data: data,
     };
     try{
-        let response = await axios(config);
+        let response = await axios(req_config);
         if(!response.data.success){
             throw new ApiError(502, 'Bad delivery gateway.');
         }
@@ -23,11 +25,12 @@ const refreshToken = async() => {
         access_token_expire_at = Math.round(new Date().getTime() / 1000) + response.data.expires_in;
     }
     catch(e){
+        logger.error(e);
         throw new ApiError(502, 'Bad delivery gateway.');
     }
 };
 
-export default async(url,method,data) => {
+module.exports = async(url,method,data) => {
     if(!access_token || !access_token_expire_at || (  Math.round(new Date().getTime() / 1000) > access_token_expire_at )){
         await refreshToken();
     }

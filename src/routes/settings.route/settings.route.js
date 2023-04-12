@@ -1,81 +1,118 @@
-import express from 'express';
-import settingsController from '../../controllers/settings.controller/settings.controller';
-import requireAuth from '../../middlewares/auth';
+const express = require('express');
+const validate = require('../../middlewares/validate');
+const auth = require('../../middlewares/auth');
+const settingsValidation = require('../../validations/settings.validation');
+const settingsController = require('../../controllers/settings.controller/settings.controller');
 
 const router = express.Router();
 
-router.route('/sys_info')
-  .get(requireAuth, settingsController.getSystemInfo)
-  .post(requireAuth, settingsController.validateSystemInfo(), settingsController.updateSystemInfo);
-
-router.route('/items_group')
-  .get(settingsController.getItemGroup)
-  .post(requireAuth, settingsController.validateItemGroup(), settingsController.itemGroup)
-  .delete(requireAuth, settingsController.delItemGroup);
-
-router.route('/items_category')
-  .get(settingsController.getItemCategory)
-  .post(requireAuth, settingsController.validateItemCategory(), settingsController.itemCategory)
-  .delete(requireAuth, settingsController.delItemCategory);
-
-router.route('/items_category/:cat_id/:group_id?')
-  .get(settingsController.getCategoryHeroProduct);
-
-router.route('/items_size')
-  .get(settingsController.getItemSize)
-  .post(requireAuth, settingsController.itemSize)
-  .delete(requireAuth, settingsController.delItemSize);
-
+/**************    Shipping   ******************* */
 router.route('/shipping')
-  .get(settingsController.getShipping)
-  .post(requireAuth, settingsController.setShipping)
-  .delete(requireAuth, settingsController.delShipping);
+    .get(auth('admin',true),validate(settingsValidation.getShippingList), settingsController.getShippingList)
+    .post(auth('admin'),validate(settingsValidation.createShipping), settingsController.createShipping);
 
-router.route('/units')
-  .get(requireAuth, settingsController.getUnits)
-  .post(requireAuth, settingsController.validateUnits(), settingsController.units)
-  .delete(requireAuth, settingsController.delUnits);
+router.route('/shipping/:id')
+    .put(auth('admin'),validate(settingsValidation.updateShipping), settingsController.updateShipping)
+    .delete(auth('admin'),validate(settingsValidation.shippingId), settingsController.deleteShipping);
+/************************************************ */
 
+
+/**************    ItemSize   ******************* */
+router.route('/items_size')
+    .get(auth('admin'),validate(settingsValidation.getItemSizeList), settingsController.getItemSizeList)
+    .post(auth('admin'),validate(settingsValidation.createItemSize), settingsController.createItemSize);
+
+router.route('/items_size/:id')
+    .put(auth('admin'),validate(settingsValidation.updateItemSize), settingsController.updateItemSize)
+    .delete(auth('admin'),validate(settingsValidation.itemSizeId), settingsController.deleteItemSize);
+/************************************************ */
+
+
+/**************    ItemGroup   ******************* */
+router.route('/items_group')
+    .get(auth('admin',true),validate(settingsValidation.getItemGroupList), settingsController.getItemGroupList)
+    .post(auth('admin'),validate(settingsValidation.createItemGroup), settingsController.createItemGroup);
+
+router.route('/items_group/:id')
+    .get(auth('admin',true),validate(settingsValidation.itemGroupId), settingsController.getItemGroup)
+    .put(auth('admin'),validate(settingsValidation.updateItemGroup), settingsController.updateItemGroup)
+    .delete(auth('admin'),validate(settingsValidation.itemGroupId), settingsController.deleteItemGroup);
+/************************************************ */
+
+
+/**************    ItemCategory   ******************* */
+router.route('/items_category')
+    .get(auth('admin',true),validate(settingsValidation.getItemCategoryList), settingsController.getItemCategoryList)
+    .post(auth('admin'),validate(settingsValidation.createItemCategory), settingsController.createItemCategory);
+
+router.route('/items_category/:cat_id/:group_id?').get(auth('admin',true),validate(settingsValidation.getCategoryHeroProduct),settingsController.getItemCategory);
+
+router.route('/items_category/:id')
+    .put(auth('admin'),validate(settingsValidation.updateItemCategory), settingsController.updateItemCategory)
+    .delete(auth('admin'), validate(settingsValidation.itemCategoryId), settingsController.deleteItemCategory);
+/************************************************ */
+
+
+/**************    Purity   ******************* */
 router.route('/purity')
-  .get(settingsController.getPurity)
-  .post(requireAuth, settingsController.validatePurity(), settingsController.purity)
-  .delete(requireAuth, settingsController.delPurity);
+    .get(auth('admin',true),validate(settingsValidation.getPurityList), settingsController.getPurityList)
+    .post(auth('admin'),validate(settingsValidation.createPurity), settingsController.createPurity);
 
-router.route('/pm')
-  .get(requireAuth, settingsController.getPM)
-  .post(requireAuth, settingsController.validatePM(), settingsController.pm)
-  .delete(requireAuth, settingsController.delPM);
+router.route('/purity/:id')
+    .put(auth('admin'),validate(settingsValidation.updatePurity), settingsController.updatePurity)
+    .delete(auth('admin'),validate(settingsValidation.purityId), settingsController.deletePurity);
+/************************************************ */
 
+
+/**************    OrderStatus   ******************* */
 router.route('/order_status')
-  .get(requireAuth, settingsController.getOrderStatus)
-  .post(requireAuth, settingsController.validateOrderStatus(), settingsController.orderStatus)
-  .delete(requireAuth, settingsController.delOrderStatus);
+    .get(auth('admin'),validate(settingsValidation.getOrderStatusList), settingsController.getOrderStatusList)
+    .post(auth('admin'),validate(settingsValidation.createOrderStatus), settingsController.createOrderStatus);
 
+router.route('/order_status/:id')
+    .put(auth('admin'),validate(settingsValidation.updateOrderStatus), settingsController.updateOrderStatus)
+    .delete(auth('admin'), validate(settingsValidation.orderStatusId), settingsController.deleteOrderStatus);
+/************************************************ */
+
+
+/**************    Unit   ******************* */
+router.route('/units')
+    .get(auth('admin'),validate(settingsValidation.getUnitList), settingsController.getUnitList)
+    .post(auth('admin'),validate(settingsValidation.createUnit), settingsController.createUnit);
+
+router.route('/units/:id')
+    .put(auth('admin'),validate(settingsValidation.updateUnit), settingsController.updateUnit)
+    .delete(auth('admin'), validate(settingsValidation.unitId), settingsController.deleteUnit);
+/************************************************ */
+
+
+/**************    Payment Method   ******************* */
+router.route('/pm')
+    .get(auth('admin'),validate(settingsValidation.getPaymentMethodList), settingsController.getPaymentMethodList)
+    .post(auth('admin'),validate(settingsValidation.createPaymentMethod), settingsController.createPaymentMethod);
+
+router.route('/pm/:id')
+    .put(auth('admin'),validate(settingsValidation.updatePaymentMethod), settingsController.updatePaymentMethod)
+    .delete(auth('admin'), validate(settingsValidation.paymentMethodId), settingsController.deletePaymentMethod);
+/************************************************ */
+
+
+/**************    Complaints   ******************* */
 router.route('/complaints')
-  .get(settingsController.getComplaints)
-  .post(requireAuth, settingsController.setComplaints)
-  .delete(requireAuth, settingsController.delComplaints);
+    .get(validate(settingsValidation.getComplaintList), settingsController.getComplaintList)
+    .post(auth('admin'),validate(settingsValidation.createComplaint), settingsController.createComplaint);
 
-router.route('/cart')
-  .get(settingsController.getCart)
-  .post(settingsController.setCart);
+router.route('/complaints/answer/:id').put(auth('admin'),validate(settingsValidation.answerComplaint), settingsController.answerComplaint);
 
-router.route('/delCart')
-  .post(settingsController.delCart);
+router.route('/complaints/:id').delete(auth('admin'), validate(settingsValidation.complaintId), settingsController.deleteComplaint);
+/************************************************ */
 
-router.route('/delCart/noAuth')
-  .post(settingsController.delCartNoAuth);
 
-router.route('/favorite')
-  .get(settingsController.getFavorite)
-  .post(settingsController.setFavorite);
+/**************    SystemInfo   ******************* */
+router.route('/sys_info')
+  .get(auth('admin'), settingsController.getSystemInfo)
+  .post(auth('admin'), validate(settingsValidation.updateSystemInfo), settingsController.updateSystemInfo);
+/************************************************ */
 
-router.route('/delFavorite')
-  .post(settingsController.delFavorite);
 
-router.route('/sendanswer').post(requireAuth, settingsController.sendAnswer);
-
-router.route('/encodeCart').post(settingsController.encodeCart);
-router.route('/decodeCart').post(settingsController.decodeCart);
-
-export default router;
+module.exports = router;

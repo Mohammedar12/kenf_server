@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const items_group = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   name_ar: {
     type: String,
   },
@@ -20,16 +14,14 @@ const items_group = new Schema({
     type: String,
   },
   images: {
-    type: [Number],
-    ref: 'upload'
+    type: [Schema.Types.ObjectId],
+    ref: 'uploads',
+    default: [],
   },
   active: {
     type: Boolean,
-    default: true
-  },
-  deleted: {
-    type: Boolean,
-    default: false
+    default: true,
+    index: true,
   },
 }, {
   timestamps: true
@@ -42,13 +34,9 @@ items_group.set('toJSON', {
     delete ret.__v;
   }
 });
-
-items_group.plugin(autoIncrementSQ, {
-  id: "items_group_id",
-  inc_field: "_id"
-});
 items_group.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+items_group.plugin(mongoosePaginate);
 
-export default mongoose.model('items_group', items_group);
+module.exports = mongoose.model('items_group', items_group);

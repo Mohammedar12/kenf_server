@@ -1,13 +1,9 @@
-import mongoose, { Schema } from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const sellerSchema = new Schema({
-    _id: {
-        type: Number,
-        required: true
-    },
     name_ar: {
       type: String,
     },
@@ -42,18 +38,13 @@ const sellerSchema = new Schema({
       type: String,
     },
     documents: {
-      type: [Number],
-      ref: 'upload'
-    },
-    deleted: {
-        type: Boolean,
-        default: false
+      type: [String],
     },
     active: {
         type: Boolean,
-        default: true
+        default: true,
+        index: true
     },
-
 }, { timestamps: true });
 
 sellerSchema.set('toJSON', {
@@ -65,7 +56,7 @@ sellerSchema.set('toJSON', {
 });
 
 
-sellerSchema.plugin(autoIncrementSQ , { id: "seller_id", inc_field: "_id" });
 sellerSchema.plugin(mongooseI18nLocalize, { locales: ['ar', 'en'] });
+sellerSchema.plugin(mongoosePaginate);
 
-export default mongoose.model('seller', sellerSchema);
+module.exports = mongoose.model('sellers', sellerSchema);

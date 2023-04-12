@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const shipping = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   company: {
     type: String
   },
@@ -19,11 +13,6 @@ const shipping = new Schema({
   time: {
     type: String
   },
-  deleted: {
-    type: Boolean,
-    default: false
-  },
-
 }, {
   timestamps: true
 });
@@ -36,12 +25,9 @@ shipping.set('toJSON', {
   }
 });
 
-shipping.plugin(autoIncrementSQ, {
-  id: "shipping_id",
-  inc_field: "_id"
-});
 shipping.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+shipping.plugin(mongoosePaginate);
 
-export default mongoose.model('shipping', shipping);
+module.exports = mongoose.model('shipping', shipping);

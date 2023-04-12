@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const payment_method = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   name_ar: {
     type: String,
   },
@@ -18,11 +12,8 @@ const payment_method = new Schema({
   },
   active: {
     type: Boolean,
-    default: true
-  },
-  deleted: {
-    type: Boolean,
-    default: false
+    default: true,
+    index: true
   },
 }, {
   timestamps: true
@@ -36,12 +27,9 @@ payment_method.set('toJSON', {
   }
 });
 
-payment_method.plugin(autoIncrementSQ, {
-  id: "payment_method_id",
-  inc_field: "_id"
-});
 payment_method.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+payment_method.plugin(mongoosePaginate);
 
-export default mongoose.model('payment_method', payment_method);
+module.exports = mongoose.model('payment_method', payment_method);

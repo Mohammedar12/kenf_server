@@ -1,166 +1,220 @@
-import bcrypt from 'bcryptjs';
-import {
-  body
-} from 'express-validator/check';
-import User from '../../models/user.model/user.model';
-import ApiError from '../../helpers/ApiError';
-import i18n from 'i18n'
-import Seller from '../../models/seller.model/seller.model';
-import {
-  checkValidations
-} from '../../helpers/CheckMethods';
+const logger = require('../../config/logger');
+const ApiError = require('../../helpers/ApiError');
+const pick = require('../../helpers/pick');
+const Seller = require('../../models/seller.model/seller.model');
+const fileService = require("../../services/file.service");
+const { nanoid } = require('nanoid');
+const convertObjectId  = require('../../helpers/convertObjectId');
+const catchAsync = require('../../helpers/catchAsync');
 
-export default {
+const createSeller = catchAsync(async (req, res, next) => {
+  const body = pick(req.body, ['name_en', 'name_ar', 'email','phone','address_en','address_ar','description_en','description_ar','city','region','zip']);
+  try{
+      if(req.files?.documents){
+          body.documents = _uploadDocuments(req.files.documents,req.user.id);
+      }
+      const seller = await Seller.create(body);
+      return res.status(200).json({
+          status: 200,
+          message: 'Seller created',
+          data: seller
+      });
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
 
-  validateSeller() {
-    let validations = [
-      body('id').optional().not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('name_en').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('name_ar').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('email').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('phone').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('address_en').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('address_ar').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('description_ar').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('description_en').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('city').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('region').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('zip').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('documents').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-    ];
-    return validations;
-  },
-  async seller(req, res, next) {
-    try {
-      const validation = checkValidations(req);
-      console.log(validation);
-      console.log(req.files);
-
-      if (validation.id) {
-        let item = await Seller.updateOne({
-          _id: validation.id
-        }, {
-          $set: {
-            name_en: validation.name_en,
-            name_ar: validation.name_ar,
-            email: validation.email,
-            phone: validation.phone,
-            address_en: validation.address_en,
-            address_ar: validation.address_ar,
-            description_ar: validation.description_ar,
-            description_en: validation.description_en,
-            city: validation.city,
-            region: validation.region,
-            zip: validation.zip,
-            documents: validation.documents,
+const updateSeller = catchAsync(async (req, res, next) => {
+  const body = pick(req.body, ['name_en', 'name_ar', 'email','phone','address_en','address_ar','description_en','description_ar','city','region','zip']);
+  const sellerId = req.params.id;
+  const deleteDocuments = req.body.deleteDocuments;
+  try{
+      if(deleteDocuments && Array.isArray(deleteDocuments) && deleteDocuments.length > 0){
+          const seller = await Seller.findOne({ _id: convertObjectId(sellerId) })
+          if(!seller){
+              return res.status(404).json({
+                  status: 404,
+                  message: 'Seller not found',
+              });
           }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
-          });
-          console.log(item);
-          return res.status(200).send(item);
-        });
-
-      } else {
-        let newGroupUnit = await Seller.create({
-          _id: false,
-          name_en: validation.name_en,
-          name_ar: validation.name_ar,
-          email: validation.email,
-          phone: validation.phone,
-          address_en: validation.address_en,
-          address_ar: validation.address_ar,
-          description_ar: validation.description_ar,
-          description_en: validation.description_en,
-          city: validation.city,
-          region: validation.region,
-          zip: validation.zip,
-          documents: validation.documents,
-        });
-        res.status(200).send(newGroupUnit);
-
-      }
-    } catch (error) {
-      next(error);
-    }
-  },
-  async getSeller(req, res, next) {
-    try {
-      let user = req.user;
-      let itemGroups = {};
-      if (!req.query.id) {
-        itemGroups = await Seller.find({
-          deleted: false
-        });
-      } else {
-        let id = req.query.id;
-        itemGroups = await Seller.findOne({
-          _id: id,
-          deleted: false
-        });
-      }
-
-
-      res.status(200).send(itemGroups);
-
-    } catch (error) {
-      next(error);
-    }
-  },
-  async delSeller(req, res, next) {
-    try {
-      // console.log(req);
-      if (req.query.id) {
-        await Seller.updateOne({
-          _id: req.query.id
-        }, {
-          $set: {
-            deleted: true
+          for(let i=0;i<deleteDocuments.length;i++){
+              if(!seller.documents.includes(deleteDocuments[i])){
+                  return res.status(400).json({
+                      status: 400,
+                      message: 'Invalid deleted document',
+                  });
+              }
           }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
+          for(let i=0;i<deleteDocuments.length;i++){
+              let deleted = fileService.deleteFile(deleteDocuments[i]);
+              if(!deleted){
+                  return res.status(500).json({
+                      status: 500,
+                      message: 'Not able to delete images',
+                  });
+              }
+          }
+          body.documents = seller.documents.filter((val)=>{
+              for(let i=0;i<deleteDocuments.length;i++){
+                  if(deleteDocuments[i] === val){
+                      return false;
+                  }
+              }
+              return true;
           });
-          return res.status(200).send({
-            success: true
-          });
-        });
-      } else {
-        next("delete items group error");
       }
-    } catch (error) {
-      next(error);
+      if(req.files?.documents){
+          let newDocuments = _uploadDocuments(req.files.documents,req.user.id);
+          if(body.documents && Array.isArray(body.documents)){
+              body.documents = body.documents.concat(newDocuments);
+          }
+          else{
+              body.documents = newDocuments;
+          }
+      }
+      const update = await Seller.updateOne({ _id: convertObjectId(sellerId) },body);
+      if(update.nModified == 0){
+          return res.status(404).json({
+              status: 404,
+              message: 'Seller not found',
+          });
+      }
+      return res.status(200).json({
+          status: 200,
+          message: 'Seller updated'
+      });
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
+
+const getSellerList = catchAsync(async (req, res, next) => {
+  const filter = {};
+  const options = pick(req.query, ['sort', 'limit', 'page']);
+  if(!options.sort || options.sort === ''){
+      options.sort = "-createdAt";
+  }
+  options.select = "id name_en name_ar email phone city region active createdAt";
+  const result = await Seller.paginate(filter, options);
+  return res.status(200).json({
+      status: 200,
+      message: '',
+      data: result
+  });
+});
+
+const getSellerById = catchAsync(async (req, res, next) => {
+    const sellerId = req.params.id;
+    try{
+        const seller = await Seller.findOne({ _id: convertObjectId(sellerId) });
+        if(!seller){
+            return res.status(404).json({
+                status: 404,
+                message: 'Seller not found',
+            });
+        }
+        return res.status(200).json({
+            status: 200,
+            message: '',
+            data: seller
+        });
     }
-  },
-};
+    catch(e){
+        return res.status(404).json({
+            status: 404,
+            message: 'Seller not found',
+        });
+    }
+});
+
+const deleteSeller = catchAsync(async (req, res, next) => {
+  const sellerId = req.params.id;
+  try{
+      const seller = await Seller.findOne({ _id: convertObjectId(sellerId) },'id documents');
+      if(!seller){
+          return res.status(404).json({
+              status: 404,
+              message: 'Seller not found',
+          });
+      }
+      if(seller.documents && Array.isArray(seller.documents) && seller.documents.length > 0){
+          for(let i=0;i<seller.documents.length;i++){
+              let deleted = fileService.deleteFile(seller.documents[i]);
+              if(!deleted){
+                  return res.status(500).json({
+                      status: 500,
+                      message: 'Not able to delete documents',
+                  });
+              }
+          }
+      }
+      await seller.remove();
+      return res.status(200).json({
+          status: 200,
+          message: 'Seller deleted successfully.',
+      });
+  }
+  catch(e){
+      return res.status(404).json({
+          status: 404,
+          message: 'Seller not found',
+      });
+  }
+});
+
+const _uploadDocuments = (files,userId) => {
+    const allowed_file_mime = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+    const allowed_file_ext = ['png', 'jpeg', 'jpg', 'gif'];
+    const file_extensions = [];
+    const file_names = [];
+    const results = [];
+    if(Array.isArray(files)){
+        for(let i=0;i<files.length;i++){
+            file_extensions[i] = files[i].name.slice(
+                ((files[i].name.lastIndexOf('.') - 1) >>> 0) + 2
+            );
+            if (!allowed_file_ext.includes(file_extensions[i])) {
+                throw new ApiError(400,"Invalid file");
+            }
+            if (!allowed_file_mime.includes(files[i].mimetype)) {
+                throw new ApiError(400,"Invalid file");
+            }
+            file_names[i] = nanoid() + '.' + file_extensions[i];
+        }
+        for(let i=0;i<files.length;i++){
+            results[i] = fileService.saveFile(files[i],'seller/documents/'+file_names[i],'private',userId);
+        }
+    }
+    else{
+        file_extensions[0] = files.name.slice(
+            ((files.name.lastIndexOf('.') - 1) >>> 0) + 2
+        );
+        if (!allowed_file_ext.includes(file_extensions[0])) {
+            throw new ApiError(400,"Invalid file");
+        }
+        if (!allowed_file_mime.includes(files[i].mimetype)) {
+            throw new ApiError(400,"Invalid file");
+        }
+        file_names[0] = nanoid() + '.' + file_extensions[0];
+        results[0] = fileService.saveFile(files,'seller/documents/'+file_names[0],'private',userId);
+    }
+    return results;
+}
+
+module.exports = {
+    createSeller,
+    updateSeller,
+    getSellerList,
+    getSellerById,
+    deleteSeller,
+}

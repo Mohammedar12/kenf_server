@@ -1,38 +1,34 @@
-import mongoose, {
-  Schema
-} from 'mongoose';
-import paginate from 'mongoose-paginate-v2';
-import mongooseI18n from 'mongoose-i18n-localize'
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const productSchema = new Schema({
-  _id: {
-    type: Number,
-    required: true,
-    default: 0
-  },
   name_ar: {
     type: String,
   },
   name_en: {
     type: String,
   },
-  category_id: {
-    type: Number,
+  category: {
+    type: Schema.Types.ObjectId,
     ref: 'items_category',
+    index: true
   },
-  kenf_id: {
-    type: Number,
+  kenf_collection: {
+    type: Schema.Types.ObjectId,
     ref: 'items_category',
+    index: true
   },
-  purity_id: {
-    type: [Number],
+  purity: {
+    type: [Schema.Types.ObjectId],
     ref: 'purity',
+    index: true,
   },
-  shop_id: {
-    type: Number,
+  shop: {
+    type: Schema.Types.ObjectId,
     ref: 'shop',
+    index: true,
   },
   weight: {
     type: Number,
@@ -43,12 +39,13 @@ const productSchema = new Schema({
   extra_price: {
     type: Number,
   },
-  group_id: {
-    type: Number,
+  group: {
+    type: Schema.Types.ObjectId,
     ref: 'items_group',
+    index: true
   },
-  unit_id: {
-    type: [Number],
+  unit: {
+    type: [Schema.Types.ObjectId],
     ref: 'units',
   },
   commission: {
@@ -61,12 +58,12 @@ const productSchema = new Schema({
     type: String,
   },
   images: {
-    type: [Number],
-    ref: 'upload',
+    type: [Schema.Types.ObjectId],
+    ref: 'uploads'
   },
   mainImage: {
-    type: Number,
-    ref: 'upload',
+    type: Schema.Types.ObjectId,
+    ref: 'uploads'
   },
   meta: {
     title: String,
@@ -76,31 +73,33 @@ const productSchema = new Schema({
   color: {
     type: String,
     enum: ['Yellow', 'White', 'Multi'],
-    default: 'White'
+    default: 'White',
+    index: true
   },
   barcode: {
     type: String,
+    unique: true,
+    sparse: true,
   },
   hidden: {
     type: Boolean,
-    default: false
-  },
-  deleted: {
-    type: Boolean,
-    default: false
+    default: false,
+    index: true
   },
   ringSize: {
-    type: Number,
+    type: Schema.Types.ObjectId,
     ref: 'items_size',
-    default: 0
+    index: true
   },
   visited: {
     type: Number,
-    default: 0
+    default: 0,
+    index: true
   },
   isExclusive: {
     type: Boolean,
-    default: false
+    default: false,
+    index: true
   },
   active: {
     type: Boolean,
@@ -119,13 +118,9 @@ productSchema.set('toJSON', {
   }
 });
 
-productSchema.plugin(mongooseI18n, {
+productSchema.plugin(mongooseI18nLocalize, {
   locales: ['en', 'ar']
 });
-productSchema.plugin(autoIncrementSQ, {
-  id: "product_id",
-  inc_field: "_id"
-});
-productSchema.plugin(paginate);
+productSchema.plugin(mongoosePaginate);
 
-export default mongoose.model('product', productSchema);
+module.exports = mongoose.model('product', productSchema);

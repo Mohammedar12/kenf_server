@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const items_size = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   name_ar: {
     type: String,
   },
@@ -21,13 +15,9 @@ const items_size = new Schema({
   },
   active: {
     type: Boolean,
-    default: true
+    default: true,
+    index: true,
   },
-  deleted: {
-    type: Boolean,
-    default: false
-  },
-
 }, {
   timestamps: true
 });
@@ -40,12 +30,9 @@ items_size.set('toJSON', {
   }
 });
 
-items_size.plugin(autoIncrementSQ, {
-  id: "items_size_id",
-  inc_field: "_id"
-});
 items_size.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+items_size.plugin(mongoosePaginate);
 
-export default mongoose.model('items_size', items_size);
+module.exports = mongoose.model('items_size', items_size);

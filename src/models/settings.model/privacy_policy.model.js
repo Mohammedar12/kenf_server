@@ -1,5 +1,6 @@
-var mongoose = require('mongoose');
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 var Schema = mongoose.Schema;
 
@@ -25,4 +26,4 @@ privacyPolicySchema.set('toJSON', {
 
 var systemInfo = mongoose.model('privacy_policy', privacyPolicySchema);
 
-export default systemInfo;
+module.exports = systemInfo;

@@ -1,30 +1,19 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const order_status = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
-
   name_ar: {
     type: String,
   },
-
   name_en: {
     type: String,
   },
   active: {
     type: Boolean,
-    default: true
-  },
-  deleted: {
-    type: Boolean,
-    default: false
+    default: true,
+    index: true
   },
 }, {
   timestamps: true
@@ -38,13 +27,9 @@ order_status.set('toJSON', {
   }
 });
 
-
-order_status.plugin(autoIncrementSQ, {
-  id: "order_status_id",
-  inc_field: "_id"
-});
 order_status.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+order_status.plugin(mongoosePaginate);
 
-export default mongoose.model('order_status', order_status);
+module.exports = mongoose.model('order_status', order_status);

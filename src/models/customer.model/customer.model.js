@@ -1,16 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18n from 'mongoose-i18n-localize'
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const CustomerSchema = new Schema({
-  _id: {
-    type: Number,
-    required: true,
-    default: 0
-  },
   name: {
     type: String,
   },
@@ -22,10 +15,6 @@ const CustomerSchema = new Schema({
   },
   address: {
     type: String
-  },
-  deleted: {
-    type: Boolean,
-    default: false
   }
 }, {
   timestamps: true
@@ -39,12 +28,9 @@ CustomerSchema.set('toJSON', {
   }
 });
 
-CustomerSchema.plugin(mongooseI18n, {
+CustomerSchema.plugin(mongooseI18nLocalize, {
   locales: ['en', 'ar']
 });
-CustomerSchema.plugin(autoIncrementSQ, {
-  id: "customer_id",
-  inc_field: "_id"
-});
+CustomerSchema.plugin(mongoosePaginate);
 
-export default mongoose.model('customer', CustomerSchema);
+module.exports = mongoose.model('customer', CustomerSchema);

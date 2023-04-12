@@ -1,12 +1,17 @@
-import express from 'express';
-import customerController from '../../controllers/customer.controller/customer.controller';
-import requireAuth from '../../middlewares/auth';
+const express = require('express');
+const customerController = require('../../controllers/customer.controller/customer.controller');
+const validate = require('../../middlewares/validate');
+const auth = require('../../middlewares/auth');
+const customerValidation = require('../../validations/customer.validation');
 
 const router = express.Router();
 
 router.route('/')
-  .get(requireAuth, customerController.getCustomers)
-  .post(requireAuth, customerController.validate(), customerController.create)
-  .delete(requireAuth, customerController.delete);
+  .get(auth('admin'), validate(customerValidation.getCustomerList), customerController.getCustomerList)
+  .post(auth('admin'), validate(customerValidation.createCustomer), customerController.createCustomer)
 
-export default router;
+router.route('/:id')
+  .put(auth('admin'), validate(customerValidation.updateCustomer), customerController.updateCustomer)
+  .delete(auth('admin'), validate(customerValidation.customerId), customerController.deleteCustomer)
+
+module.exports = router;

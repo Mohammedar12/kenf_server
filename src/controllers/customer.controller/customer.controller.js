@@ -1,121 +1,95 @@
-import Customer from '../../models/customer.model/customer.model';
-import {
-  body
-} from "express-validator/check";
-import i18n from 'i18n'
-import {
-  checkValidations
-} from '../../helpers/CheckMethods';
+const logger = require('../../config/logger');
+const pick = require('../../helpers/pick');
+const Customer = require('../../models/customer.model/customer.model');
+const convertObjectId  = require('../../helpers/convertObjectId');
+const catchAsync = require('../../helpers/catchAsync');
 
-export default {
+const createCustomer = catchAsync(async (req, res, next) => {
+  const body = pick(req.body, ['name', 'email', 'phone','address']);
+  try{
+      const customer = await Customer.create(body);
+      return res.status(200).json({
+          status: 200,
+          message: 'Customer created',
+          data: customer
+      });
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
 
-  validate() {
-    let validations = [
-      body('id').optional().not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('name').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('email').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('phone').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('address').not().isEmpty().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-    ];
-    return validations;
-  },
-  async create(req, res, next) {
-    try {
-      const validation = checkValidations(req);
-      console.log(validation);
-      console.log(req.body);
-
-      if (validation.id) {
-        let item = await Customer.updateOne({
-          _id: validation.id
-        }, {
-          $set: {
-            name: validation.name,
-            email: validation.email,
-            phone: validation.phone,
-            address: validation.address,
-          }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
+const updateCustomer = catchAsync(async (req, res, next) => {
+  const body = pick(req.body, ['name', 'email', 'phone','address']);
+  const customerId = req.params.id;
+  try{
+      const update = await Customer.updateOne({ _id: convertObjectId(customerId) },body);
+      if(update.nModified == 0){
+          return res.status(404).json({
+              status: 404,
+              message: 'Customer not found',
           });
-          return res.status(200).send(item);
-        });
-
-      } else {
-        let newGroupUnit = await Customer.create({
-          _id: false,
-          name: validation.name,
-          email: validation.email,
-          phone: validation.phone,
-          address: validation.address,
-        });
-        res.status(200).send(newGroupUnit);
-
       }
-    } catch (error) {
-      next(error);
-    }
-  },
-  async getCustomers(req, res, next) {
-    try {
-      let user = req.user;
-      let itemGroups = {};
-      if (!req.query.id) {
-        itemGroups = await Customer.find({
-          deleted: false
-        }).populate('user_id');
-      } else {
-        let id = req.query.id;
-        itemGroups = await Customer.findOne({
-          _id: id,
-          deleted: false
-        }).populate('user_id');
-      }
+      return res.status(200).json({
+          status: 200,
+          message: 'Customer updated'
+      });
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
 
-      res.status(200).send(itemGroups);
+const getCustomerList = catchAsync(async (req, res, next) => {
+  const filter = {};
+  const options = pick(req.query, ['sort', 'limit', 'page']);
+  if(!options.sort || options.sort === ''){
+      options.sort = "-createdAt";
+  }
+  const result = await Customer.paginate(filter, options);
+  return res.status(200).json({
+      status: 200,
+      message: '',
+      data: result
+  });
+});
 
-    } catch (error) {
-      next(error);
-    }
-  },
-  async delete(req, res, next) {
-    try {
-      // console.log(req);
-      if (req.query.id) {
-        await Customer.updateOne({
-          _id: req.query.id
-        }, {
-          $set: {
-            deleted: true
-          }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
+const deleteCustomer = catchAsync(async (req, res, next) => {
+  const customerId = req.params.id;
+  try{
+      const customer = await Seller.findOne({ _id: convertObjectId(customerId) },'id');
+      if(!customer){
+          return res.status(404).json({
+              status: 404,
+              message: 'Customer not found',
           });
-          return res.status(200).send({
-            success: true
-          });
-        });
-      } else {
-        next("delete items group error");
       }
-    } catch (error) {
-      next(error);
-    }
-  },
+      await customer.remove();
+      return res.status(200).json({
+          status: 200,
+          message: 'Customer deleted successfully.',
+      });
+  }
+  catch(e){
+      return res.status(404).json({
+          status: 404,
+          message: 'Customer not found',
+      });
+  }
+});
+
+
+module.exports = {
+  createCustomer,
+  updateCustomer,
+  getCustomerList,
+  deleteCustomer
 }

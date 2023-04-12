@@ -1,13 +1,9 @@
-import mongoose, { Schema } from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize'
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const NotifSchema = new Schema({
-    _id: {
-        type: Number,
-        required: true
-    },
     resource: {
         type: Number,
         ref: 'user'
@@ -61,7 +57,6 @@ NotifSchema.set('toJSON', {
     }
 });
 
-NotifSchema.plugin(autoIncrementSQ , { id: "notif_id", inc_field: "_id" });
 NotifSchema.plugin(mongooseI18nLocalize,{locales:['ar','en']});
 
-export default mongoose.model('notification', NotifSchema);
+module.exports = mongoose.model('notification', NotifSchema);

@@ -1,13 +1,9 @@
-import mongoose, { Schema } from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const UserRoleSchema = new Schema({
-    _id: {
-        type: Number,
-        required: true
-    },
     name_ar: {
       type: String,
     },
@@ -22,14 +18,6 @@ const UserRoleSchema = new Schema({
       type: Boolean,
       default: true
     },
-    deleted: {
-      type: Boolean,
-      default: false
-    },
-    deleted: {
-        type: Boolean,
-        default: false
-    },
 }, { timestamps: true });
 
 UserRoleSchema.set('toJSON', {
@@ -40,7 +28,8 @@ UserRoleSchema.set('toJSON', {
     }
 });
 
-UserRoleSchema.plugin(autoIncrementSQ , { id: "user_role_id", inc_field: "_id" });
 UserRoleSchema.plugin(mongooseI18nLocalize, { locales: ['ar', 'en'] });
+UserRoleSchema.plugin(mongoosePaginate);
 
-export default mongoose.model('user_role', UserRoleSchema);
+
+module.exports = mongoose.model('user_role', UserRoleSchema);

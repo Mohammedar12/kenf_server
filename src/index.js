@@ -1,86 +1,46 @@
-#!/usr/bin/env node
+const mongoose = require('mongoose');
+const App = require('./app.js');
+const config = require('./config/config.js');
+const logger = require('./config/logger.js');
+const redisService = require('./services/redis.service.js');
 
-/**
- * Module dependencies.
- */
-import app from './app';
-import http from 'http';
-import 'dotenv/config';
-var debug = require('debug');
-var server = http.createServer(app);
+let server;
+let app;
 
-  /**
-   * Get port from environment and store in Express.
-   */
-
-  var port = normalizePort(process.env.PORT || '4000');
-  app.set('port', port);
-
-  /**
-   * Create HTTP server.
-   */
-  /**
-   * Listen on provided port, on all network interfaces.
-   */
-
-  server.listen(port);
-  server.on('error', onError);
-  server.on('listening', onListening);
-
-
-
-function normalizePort(val) {
-  var port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    // named pipe
-    return val;
+mongoose.connect(config.mongoose.url, config.mongoose.options).then(async() => {
+  logger.info('Connected to MongoDB');
+  let connected = await redisService.initialize();
+  if(connected){
+    app = new App();
+    server = app.startApp();
   }
+}).catch((err)=>{
+  logger.error("Database connection error");
+  logger.error(err);
+});
 
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
-  return false;
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string' ?
-    'Pipe ' + port :
-    'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+const exitHandler = () => {
+  if (server) {
+    server.close(() => {
+      logger.info('Server closed');
       process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
+    });
+  } else {
+    process.exit(1);
   }
-}
+};
 
-/**
- * Event listener for HTTP server "listening" event.
- */
+const unexpectedErrorHandler = (error) => {
+  logger.error(error);
+  exitHandler();
+};
 
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string' ?
-    'pipe ' + addr :
-    'port ' + addr.port;
-  debug('Listening on ' + bind);
-}
+process.on('uncaughtException', unexpectedErrorHandler);
+process.on('unhandledRejection', unexpectedErrorHandler);
+
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received');
+  if (server) {
+    server.close();
+  }
+});

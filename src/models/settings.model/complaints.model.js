@@ -1,39 +1,36 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const complaints = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   email: {
     type: String,
+    required: true
   },
   name: {
     type: String,
+    required: true
   },
   title: {
     type: String,
+    required: true
   },
   complaints: {
     type: String,
+    required: true
   },
   images: {
-    type: Object(Number),
-    ref: 'upload'
+    type: [String],
+    default: []
   },
   answer: {
     type: String,
   },
-  deleted: {
-    type: Boolean,
-    default: false
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'user'
   },
-
 }, {
   timestamps: true
 });
@@ -46,12 +43,8 @@ complaints.set('toJSON', {
   }
 });
 
-complaints.plugin(autoIncrementSQ, {
-  id: "complaints_id",
-  inc_field: "_id"
-});
 complaints.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
 
-export default mongoose.model('complaints', complaints);
+module.exports = mongoose.model('complaints', complaints);

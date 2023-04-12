@@ -1,184 +1,152 @@
-import bcrypt from 'bcryptjs';
-import { body } from 'express-validator/check';
-import ApiError from '../../helpers/ApiError';
-import i18n from 'i18n'
-import Shop from '../../models/shop.model/shop.model';
-import User from '../../models/user.model/user.model'
-import {
-  checkValidations
-} from '../../helpers/CheckMethods';
+const logger = require('../../config/logger');
+const pick = require('../../helpers/pick');
+const Shop = require('../../models/shop.model/shop.model');
+const convertObjectId = require('../../helpers/convertObjectId');
+const catchAsync = require('../../helpers/catchAsync');
 
-
-export default {
-  validateShop() {
-    let validations = [
-      body('id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('seller_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('app_name_ar').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('app_name_en').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('email').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('phone').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('mobile').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('address_en').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('address_ar').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('description_ar').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('description_en').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('city').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('region').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('zip').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('commission').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('images').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-    ];
-    return validations;
-  },
-  async shop(req, res, next) {
-    try {
-      const validation = checkValidations(req);
-      console.log('!!!' + validation);
-      console.log(req.files);
-
-      if (validation.id) {
-        let item = await Shop.updateOne({
-          _id: validation.id
-        }, {
-          $set: {
-            seller_id: validation.seller_id,
-            app_name_ar: validation.app_name_ar,
-            app_name_en: validation.app_name_en,
-            email: validation.email,
-            app_abbreviation: req.body.app_abbreviation,
-            phone: validation.phone,
-            mobile: validation.mobile,
-            address_en: validation.address_en,
-            address_ar: validation.address_ar,
-            description_ar: validation.description_ar,
-            description_en: validation.description_en,
-            city: validation.city,
-            region: validation.region,
-            zip: validation.zip,
-            commission: validation.commission,
-            images: validation.images,
-          }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
-          });
-          return res.status(200).send(item);
-        });
-
-      } else {
-        let newGroupUnit = await Shop.create({
-          _id: false,
-          seller_id: validation.seller_id,
-          app_name_ar: validation.app_name_ar,
-          app_name_en: validation.app_name_en,
-          email: validation.email,
-          app_abbreviation: req.body.app_abbreviation,
-          phone: validation.phone,
-          mobile: validation.mobile,
-          address_en: validation.address_en,
-          address_ar: validation.address_ar,
-          description_ar: validation.description_ar,
-          description_en: validation.description_en,
-          city: validation.city,
-          region: validation.region,
-          zip: validation.zip,
-          commission: validation.commission,
-          images: validation.images,
-
-        });
-        console.log(newGroupUnit);
-        res.status(200).send(newGroupUnit);
-
+const createShop = catchAsync(async (req, res, next) => {
+  const body = pick(req.body, ['seller', 'app_name_en', 'app_name_ar', 'app_abbreviation', 'email','phone','city','region','zip','address_en','address_ar','description_en','description_ar','commission','active','images']);
+  try{
+      if(body.images){
+        const validImages = await _validateUploads(body.images);
+        if(!validImages){
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid images'
+            });  
+        }
       }
-    } catch (error) {
-      next(error);
-    }
-  },
-  async delShop(req, res, next) {
-    try {
-      // console.log(req);
-      if (req.query.id) {
-        await Shop.updateOne({
-          _id: req.query.id
-        }, {
-          $set: {
-            deleted: true
-          }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
+      const shop = await Shop.create(body);
+      return res.status(200).json({
+          status: 200,
+          message: 'Shop created',
+          data: shop
+      });
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
+
+const updateShop = catchAsync(async (req, res, next) => {
+  const body = pick(req.body, ['seller', 'app_name_en', 'app_name_ar', 'app_abbreviation', 'email','phone','city','region','zip','address_en','address_ar','description_en','description_ar','commission','active','images']);
+  const shopId = req.params.id;
+  try{
+      if(body.images){
+        const validImages = await _validateUploads(body.images);
+        if(!validImages){
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid images'
+            });  
+        }
+      }  
+      const update = await Shop.updateOne({ _id: convertObjectId(shopId) },body);
+      if(update.nModified == 0){
+          return res.status(404).json({
+              status: 404,
+              message: 'Shop not found',
           });
-          return res.status(200).send({
-            success: true
+      }
+      return res.status(200).json({
+          status: 200,
+          message: 'Shop updated'
+      });
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
+
+const getShopList = catchAsync(async (req, res, next) => {
+  const filter = {};
+  const options = pick(req.query, ['sort', 'limit', 'page']);
+  if(!options.sort || options.sort === ''){
+      options.sort = "-createdAt";
+  }
+  options.select = "id app_name_en app_name_en app_abbreviation email phone city active createdAt";
+  const result = await Shop.paginate(filter, options);
+  return res.status(200).json({
+      status: 200,
+      message: '',
+      data: result
+  });
+});
+
+const getShopById = catchAsync(async (req, res, next) => {
+    const shopId = req.params.id;
+    try{
+        const shop = await Shop.findOne({ _id: convertObjectId(shopId) }).populate({
+            path: 'images',
+            select: { link: 1, file_type: 1 }
+        }).populate('seller');
+        if(!shop){
+            return res.status(404).json({
+                status: 404,
+                message: 'Shop not found',
+            });
+        }
+        return res.status(200).json({
+            status: 200,
+            message: '',
+            data: shop
+        });
+    }
+    catch(e){
+        return res.status(404).json({
+            status: 404,
+            message: 'Shop not found',
+        });
+    }
+});
+
+const deleteShop = catchAsync(async (req, res, next) => {
+  const shopId = req.params.id;
+  try{
+      const shop = await Shop.findOne({ _id: convertObjectId(shopId) },'id images');
+      if(!shop){
+          return res.status(404).json({
+              status: 404,
+              message: 'Shop not found',
           });
-        });
-      } else {
-        next("delete items group error");
       }
-    } catch (error) {
-      next(error);
+      await shop.remove();
+      return res.status(200).json({
+          status: 200,
+          message: 'Shop deleted successfully.',
+      });
+  }
+  catch(e){
+      return res.status(404).json({
+          status: 404,
+          message: 'Shop not found',
+      });
+  }
+});
+
+const _validateUploads = async(ids) => {
+    for(let i=0;i<ids.length;i++){
+        ids[i] = convertObjectId(ids[i]);
     }
-  },
-  async getShops(req, res, next) {
-    try {
-      let user = req.user;
-      let itemGroups = {};
-      if (!req.query.id) {
-        itemGroups = await Shop.find({
-          deleted: false
-        });
-      } else {
-        let id = req.query.id;
-        itemGroups = await Shop.findOne({
-          _id: id,
-          deleted: false
-        });
-      }
-
-      console.log('getShop:', itemGroups)
-
-      res.status(200).send(itemGroups);
-
-    } catch (error) {
-      next(error);
+    const count = await Upload.countDocuments({ _id: { $in: ids } });
+    if(ids.length != count){
+        return false;
     }
-  },
+    return true;
+}
 
-};
+module.exports = {
+    createShop,
+    updateShop,
+    getShopList,
+    getShopById,
+    deleteShop,
+}

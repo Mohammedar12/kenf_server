@@ -1,28 +1,39 @@
-import mongoose, {
-  Schema
-} from 'mongoose';
-import isEmail from 'validator/lib/isEmail';
-import mongooseI18n from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
+const { roles } = require('../../config/roles');
 
 const userSchema = new Schema({
   name: {
     type: String,
   },
+  profilePicture: {
+    type: String,
+  },
   email: {
     type: String,
     trim: true,
+    unique: true,
+    sparse: true,
+    lowercase: true,
   },
   password: {
     type: String,
   },
   phone: {
     type: String,
+    trim: true,
+    unique: true,
+    sparse: true
   },
   confirmationCode: {
+    code: { type: String },
+    codeType: {
       type: String,
-      unique: true
+      enum: ['Email', 'Phone'],
+    },
+    createdAt: {type: Date},
   },
   address: {
       fullname: {
@@ -70,62 +81,46 @@ const userSchema = new Schema({
         type: String
       }
   },
-  favorite: {
-      type: [Number],
-      ref: 'product'
-  },
   cart: {
-      type: [Number],
-      ref: 'product'
+      type: [{
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: 'product',
+        },
+        quantity: {
+          type: Number,
+        }
+      }],
+      default: []
   },
-  cardNumber: {
-      type: String
-  },
-  cardExpire: {
-      type: String
-  },
-  cardCVV: {
-      type: String
-  },
-  cardType: {
-      type: String,
-      enum: ['credit', 'mada']
-  },
-  type: {
+  role: {
     type: String,
-    enum: ['ADMIN', 'USER'],
+    enum: roles,
     required: true,
-    default: 'User'
+    default: 'user'
   },
   status: {
-    type: String,
-    enum: ['Pending', 'Active'],
-    default: 'Pending'
-  },
-  deleted: {
     type: Boolean,
-    default: false
+    default: true
   },
+  loginType:{
+    type: String,
+    enum: ['email','phone']
+  }
 }, {
   timestamps: true
 });
 
-// userSchema.set('toJSON', {
-//   transform: function(doc, ret, options) {
-//     ret.id = ret._id;
-//     delete ret.password;
-//     delete ret._id;
-//     delete ret.__v;
-//   }
-// });
+userSchema.plugin(mongoosePaginate);
 
-// userSchema.plugin(mongooseI18n, {
-//   locales: ['en', 'ar']
-// });
+userSchema.index({name: 'text', email: 'text', phone: 'text' });
 
-// userSchema.plugin(autoIncrementSQ, {
-//   id: "user_id",
-//   inc_field: "_id"
-// });
+userSchema.set('toJSON', {
+  transform: function(doc, ret, options) {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+  }
+});
 
-export default mongoose.model('user', userSchema);
+module.exports = mongoose.model('user', userSchema);

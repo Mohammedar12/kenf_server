@@ -1,14 +1,14 @@
-import mongoose, { Schema } from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const shopSchema = new Schema({
-    _id: {
-        type: Number,
-        required: true
+    seller: {
+      type: Schema.Types.ObjectId,
+      ref: 'sellers'
     },
-    seller_id: {
+    app_name_en: {
       type: String,
     },
     app_name_ar: {
@@ -20,13 +20,7 @@ const shopSchema = new Schema({
     email: {
       type: String,
     },
-    app_name_en: {
-      type: String,
-    },
     phone: {
-      type: String,
-    },
-    mobile: {
       type: String,
     },
     city: {
@@ -54,18 +48,14 @@ const shopSchema = new Schema({
       type: Number,
     },
     images: {
-      type: [Number],
-      ref: 'upload'
-    },
-    deleted: {
-        type: Boolean,
-        default: false
+      type: [Schema.Types.ObjectId],
+      ref: 'uploads'
     },
     active: {
         type: Boolean,
-        default: true
+        default: true,
+        index: true
     },
-
 }, { timestamps: true });
 
 shopSchema.set('toJSON', {
@@ -76,7 +66,7 @@ shopSchema.set('toJSON', {
     }
 });
 
-shopSchema.plugin(autoIncrementSQ , { id: "shop_id", inc_field: "_id" });
 shopSchema.plugin(mongooseI18nLocalize, { locales: ['ar', 'en'] });
+shopSchema.plugin(mongoosePaginate);
 
-export default mongoose.model('shop', shopSchema);
+module.exports = mongoose.model('shop', shopSchema);

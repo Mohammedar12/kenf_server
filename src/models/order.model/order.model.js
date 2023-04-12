@@ -1,46 +1,42 @@
-import mongoose, { Schema } from "mongoose";
-import mongooseI18n from "mongoose-i18n-localize";
-import paginate from 'mongoose-paginate-v2';
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
-    order_id: {
+    tryoto_id: {
         type: Number,
-        required: true,
-        default: 0
+        unique: true,
+        sparse: true,
     },
-    deleted: {
-        type: Boolean,
-        default: false
-    },
-    shipping_id: {
-        type: Number,
+    shipping: {
+        type: Schema.Types.ObjectId,
         ref: 'shipping'
     },
-    tax: {
-        type: Number,
-        default: 0
-    },
-    shippingPrice: {
-        type: Number,
-        default: 0
-    },
-    customer_id: {
-        type: Object(String),
+    customer: {
+        type: Schema.Types.ObjectId,
         ref: 'user',
-        required: true
+        required: true,
+        index: true
     },
-    products: {
-        type: [Number],
-        ref: 'product'
+    items: {
+        type: [
+            {
+                product: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'product',
+                },
+                quantity: Number,
+                price: Number
+            }
+        ]
     },
     status: {
         type: String,
-        enum: ['WAITING',
-            'ACCEPTED',
-            'REJECTED',
-            'CANCELED',
-            'SHIPPED', 'PREPARED', 'HAND_OVERED',
-            'DELIVERED'],
+        enum: [
+            'WAITING','REJECTED','CANCELED',
+            'ACCEPTED', 'SHIPPED', 'PREPARED', 'DELIVERED'
+        ],
         default: 'WAITING'
     },
     rejectReason: {
@@ -50,44 +46,62 @@ const orderSchema = new Schema({
         type: String,
         enum: ['CASH', 'CREDIT']
     },
-    offer_id: {
-        type: Number,
+    offer: {
+        type: Schema.Types.ObjectId,
         ref: 'offer'
     },
-    coupon_id: {
-        type: Object(Number),
-        ref: 'coupon'
+    coupon: {
+        type: Schema.Types.ObjectId,
+        ref: 'coupon',
     },
     price: {
         type: Number
     },
-    totalPrice: {
-        type: Number
-    },
-    discountValue: {
+    discount: {
         type: Number,
         default: 0
     },
-    checkoutId: {
-        type: String
+    effectivePrice: {
+        type: Number,
     },
-    paymentId: {
-        type: String
+    tax: {
+        type: Number,
+        default: 0
+    },
+    shippingPrice: {
+        type: Number,
+        default: 0
+    },
+    totalPrice: {
+        type: Number
+    },
+    paymentInfo:{
+        invoiceId: { type: String, unique: true,sparse: true },
+        completedAt: { type: Date },
+        paymentId: { type: String },
     },
     paymentStatus: {
         type: String,
-        enum: ['PENDING', 'FAILED', 'SUCCESSED', 'REFUNDED'],
+        enum: ['PENDING', 'FAILED', 'SUCCESS', 'REFUNDED'],
     },
     deliveryInfo: {
         name: { type: String },
         email: { type: String },
-        mobile: { type: String },
+        phone: { type: String },
         address: { type: String },
         city: { type: String },
         country: { type: String },
-        postcode: { type: String }
-    }
-    ,
+        zipCode: { type: String }
+    },
+    billingInfo: {
+        name: { type: String },
+        email: { type: String },
+        phone: { type: String },
+        address: { type: String },
+        city: { type: String },
+        country: { type: String },
+        zipCode: { type: String }
+    },
     cart: {
         type: Boolean,
         default: false
@@ -95,8 +109,8 @@ const orderSchema = new Schema({
 }, {
     timestamps: true
 });
+orderSchema.index({ coupon: 1, paymentStatus: 1 });
+orderSchema.plugin(mongooseI18nLocalize, { locales: ['ar', 'en'] });
+orderSchema.plugin(mongoosePaginate);
 
-orderSchema.plugin(mongooseI18n, { locales: ['ar', 'en'] });
-orderSchema.plugin(paginate);
-
-export default mongoose.model('order', orderSchema);
+module.exports = mongoose.model('order', orderSchema);

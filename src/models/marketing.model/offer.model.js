@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const offer = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   name_ar: {
     type: String,
   },
@@ -26,20 +20,16 @@ const offer = new Schema({
     type: Number,
   },
   start_date: {
-    type: String,
+    type: Date,
   },
   end_date: {
-    type: String,
+    type: Date,
   },
   active: {
     type: Boolean,
-    default: true
+    default: true,
+    index: true
   },
-  deleted: {
-    type: Boolean,
-    default: false
-  },
-
 }, {
   timestamps: true
 });
@@ -52,13 +42,9 @@ offer.set('toJSON', {
   }
 });
 
-offer.plugin(autoIncrementSQ, {
-  id: "offer_id",
-  inc_field: "_id"
-});
-
 offer.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+offer.plugin(mongoosePaginate);
 
-export default mongoose.model('offer', offer);
+module.exports = mongoose.model('offer', offer);

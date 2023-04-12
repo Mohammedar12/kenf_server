@@ -1,12 +1,9 @@
-var mongoose = require('mongoose');
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
-
-var Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 var systemSchema = new Schema({
-  _id: {
-    type: Number
-  },
   app_name: {
     type: String,
   },
@@ -52,4 +49,4 @@ systemSchema.set('toJSON', {
 
 var systemInfo = mongoose.model('system_info', systemSchema);
 
-export default systemInfo;
+module.exports = systemInfo;

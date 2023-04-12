@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const items_category = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   name_ar: {
     type: String,
   },
@@ -23,22 +17,20 @@ const items_category = new Schema({
     type: String,
   },
   images: {
-    type: [Number],
-    ref: 'upload'
+    type: [Schema.Types.ObjectId],
+    ref: 'uploads',
+    default: [],
   },
   isKenf: {
     type: Boolean,
     default: false,
+    index: true,
   },
   active: {
     type: Boolean,
-    default: true
+    default: true,
+    index: true,
   },
-  deleted: {
-    type: Boolean,
-    default: false
-  },
-
 }, {
   timestamps: true
 });
@@ -51,12 +43,9 @@ items_category.set('toJSON', {
   }
 });
 
-items_category.plugin(autoIncrementSQ, {
-  id: "items_category_id",
-  inc_field: "_id"
-});
 items_category.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+items_category.plugin(mongoosePaginate);
 
-export default mongoose.model('items_category', items_category);
+module.exports = mongoose.model('items_category', items_category);

@@ -1,382 +1,429 @@
-import bcrypt from 'bcryptjs';
-import { body } from 'express-validator/check';
-import User from '../../models/user.model/user.model';
-import ApiError from '../../helpers/ApiError';
-import i18n from 'i18n'
-import Product from '../../models/products.model/products.model';
-import ItemsCategory from '../../models/settings.model/items_category.model';
-import category_hero_product from '../../models/settings.model/category_hero_product.model';
-import {
-  checkValidations
-} from '../../helpers/CheckMethods';
+const Product = require('../../models/products.model/products.model');
+const ItemsCategory = require('../../models/settings.model/items_category.model');
+const Purity = require('../../models/settings.model/purity.model');
+const Unit = require('../../models/settings.model/units.model');
+const Shop = require('../../models/shop.model/shop.model');
+const ItemGroup = require('../../models/settings.model/items_group.model');
+const ItemSize = require('../../models/settings.model/items_size.model');
+const category_hero_product = require('../../models/settings.model/category_hero_product.model');
+const logger = require('../../config/logger');
+const convertObjectId = require('../../helpers/convertObjectId');
+const catchAsync = require('../../helpers/catchAsync');
+const pick = require('../../helpers/pick');
+const ApiError = require('../../helpers/ApiError');
+const Favorite = require('../../models/user.model/favorite.model');
 
-import fs from "fs";
-import path from "path";
-import url from "url";
 
-export default {
-  async addVisit(req, res, next) {
-    Product.updateOne({
-      _id: req.body.id
-    }, {
-      $set: {
-        visited: req.body.visit + 1
+const createProduct = catchAsync(async (req, res, next) => {
+  const body = pick(req.body, ['name_ar', 'name_en', 'category', 'kenf_collection', 'purity', 'shop', 'weight', 'quantity', 'extra_price', 'group', 'unit', 'commission', 'description_ar', 'description_en', 'meta', 'color', 'barcode', 'hidden', 'ringSize', 'isExclusive', 'active', 'images', 'mainImage']);
+  await _validateForeignIds(body);
+  try{
+      if(body.images){
+        const validImages = await _validateUploads(body.images);
+        if(!validImages){
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid images'
+            });  
+        }
       }
-    })
-    .then(product => {
-      console.log(product)
-      return res.status(200).json(product);
-    })
-    .catch(err => console.log(err));
-  },
-  validateProduct() {
-    let validations = [
-      body('id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('isExclusive').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('seller_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('name_ar').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('name_en').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('category_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('kenf_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('purity_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('shop_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('weight').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-
-      body('quantity').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('description_ar').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('description_en').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('group_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('unit_id').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('commission').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('extra_price').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('images').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-      body('mainImage').optional().withMessage(() => {
-        return i18n.__('phoneRequired')
-      }),
-    ];
-    return validations;
-  },
-  async product(req, res, next) {
-    try {
-      const validation = checkValidations(req);
-
-      if (validation.id) {
-        console.log("Input Products: ", req.body)
-        let updateProduct = await Product.updateOne({
-          _id: validation.id
-        }, {
-          $set: {
-            name_ar: req.body.name_ar,
-            name_en: req.body.name_en,
-            category_id: req.body.category_id,
-            kenf_id: req.body.kenf_id,
-            purity_id: req.body.purity_id,
-            shop_id: req.body.shop_id,
-            extra_price: req.body.extra_price,
-            weight: req.body.weight,
-            quantity: req.body.quantity,
-            description_ar: req.body.description_ar,
-            description_en: req.body.description_en,
-            group_id: req.body.group_id,
-            unit_id: req.body.unit_id,
-            ringSize: req.body?.ring_size,
-            commission: req.body.commission,
-            isExclusive: req.body.isExclusive,
-            color: req.body.color,
-            images: typeof req.body.images[0] == 'object' ? req.body.images.map(item => item.id) : req.body.images,
-            mainImage:  req.body.mainImage,
+      if(body.mainImage){
+        const validMainImage = await _validateUploads([body.mainImage]);
+        if(!validMainImage){
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid main images'
+            });  
+        }
+      }
+      const product = await Product.create(body);
+      if(req.body.isSpecial){
+        if(req.body.special_cat_id){
+          let special_cat = await ItemsCategory.findOne({ _id: convertObjectId(req.body.special_cat_id) });
+          if(!special_cat){
+            await product.remove();
+            return res.status(400).json({message: "Special category not found"});
           }
-        });
-        if(req.body.isSpecial){
-          if(req.body.special_cat_id){
-            let special_cat = await ItemsCategory.findOne({ _id: req.body.special_cat_id });
-            if(!special_cat){
-              return res.status(400).json({message: "Special category not found"});
+          let hero_product_mapping = await category_hero_product.findOne({ product: product.id });
+          if(hero_product_mapping && hero_product_mapping.category !== convertObjectId(req.body.special_cat_id)){
+            if( ( special_cat.isKenf && hero_product_mapping.group !==  convertObjectId(body.group)) || ( !special_cat.isKenf )){
+              await hero_product_mapping.remove();
             }
-            let hero_product_mapping = await category_hero_product.findOne({ product: validation.id });
-            if(hero_product_mapping && hero_product_mapping.category !== req.body.special_cat_id){
-              if( ( special_cat.isKenf && hero_product_mapping.group !==  req.body.group_id) || ( !special_cat.isKenf )){
-                await hero_product_mapping.remove();
-              }
-              hero_product_mapping = undefined;
-            }
+            hero_product_mapping = undefined;
+          }
+          if(special_cat.isKenf){
+            hero_product_mapping = await category_hero_product.findOne({ category: convertObjectId(req.body.special_cat_id), group: undefined });
+          }
+          else{
+            hero_product_mapping = await category_hero_product.findOne({ category: convertObjectId(req.body.special_cat_id), group: product.group });
+          }
+          if(hero_product_mapping){
+            hero_product_mapping.product = product.id;
+            await hero_product_mapping.save();
+          }
+          else{
             if(special_cat.isKenf){
-              hero_product_mapping = await category_hero_product.findOne({ category: req.body.special_cat_id, group: undefined });
-            }
-            else{
-              hero_product_mapping = await category_hero_product.findOne({ category: req.body.special_cat_id, group: req.body.group_id });
-            }
-            if(hero_product_mapping){
-              hero_product_mapping.product = validation.id;
-              await hero_product_mapping.save();
-            }
-            else{
-              if(special_cat.isKenf){
-                await category_hero_product.create({ product: validation.id, category: req.body.special_cat_id });
-              } else{
-                await category_hero_product.create({ product: validation.id, category: req.body.special_cat_id, group: req.body.group_id });
-              }
+              await category_hero_product.create({ product: product.id, category: convertObjectId(req.body.special_cat_id) });
+            } else{
+              await category_hero_product.create({ product: product.id, category: convertObjectId(req.body.special_cat_id), group: product.group });
             }
           }
         }
-        return res.status(200).json({value: updateProduct});
-      } else {
-        let newGroupUnit = await Product.create({
-          _id: false,
-          name_ar: validation.name_ar,
-          name_en: validation.name_en,
-          category_id: validation.category_id,
-          kenf_id: validation.kenf_id,
-          extra_price: validation.extra_price,
-          purity_id: validation.purity_id,
-          shop_id: validation.shop_id,
-          weight: validation.weight,
-          quantity: validation.quantity,
-          description_ar: validation.description_ar,
-          description_en: validation.description_en,
-          group_id: validation.group_id,
-          unit_id: validation.unit_id,
-          ringSize: req.body?.ring_size,  
-          commission: validation.commission,
-          isExclusive: validation.isExclusive,
-          color: validation.color,
-          images: validation.images,
-          mainImage:  validation.mainImage,
-        });
-        res.status(200).send(newGroupUnit);
+      }
+      return res.status(200).json({
+          status: 200,
+          message: 'Product created',
+          data: product
+      });  
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
 
-      }
-    } catch (error) {
-      next(error);
-    }
-  },
-  async delProduct(req, res, next) {
-    try {
-      if (req.query.id) {
-        await Product.updateOne({
-          _id: req.query.id
-        }, {
-          $set: {
-            deleted: true
-          }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
-          });
-          return res.status(200).send({
-            success: true
-          });
-        });
-      } else {
-        next("delete items group error");
-      }
-    } catch (error) {
-      next(error);
-    }
-  },
-  async getProduct(req, res, next) {
-    try {
-      // let user = req.user;
-      let itemGroups = {};
-      let special_cat;
-      if (!req.query.id) {
-        itemGroups = await Product.find({
-          deleted: false
-        }).populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id');
-      } else {
-        let id = req.query.id;
-        itemGroups = await Product.findOne({
-          _id: id,
-          deleted: false
-        }).populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id'); 
-        itemGroups = itemGroups.toJSON();
-        if(itemGroups){
-          special_cat = await category_hero_product.findOne({ product: id }).populate('category').populate('group');
-          itemGroups.special_cat = special_cat;
-        }
-        else{
-          itemGroups.special_cat = null;
+const updateProduct = catchAsync(async (req, res, next) => {
+  const product_id = req.params.id;
+  const body = pick(req.body, ['name_ar', 'name_en', 'category', 'kenf_collection', 'purity', 'shop', 'weight', 'quantity', 'extra_price', 'group', 'unit', 'commission', 'description_ar', 'description_en', 'meta', 'color', 'barcode', 'hidden', 'ringSize', 'isExclusive', 'active', 'images', 'mainImage']);
+  await _validateForeignIds(body);
+  try{
+      if(body.images){
+        const validImages = await _validateUploads(body.images);
+        if(!validImages){
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid images'
+            });  
         }
       }
-
-      res.status(200).send(itemGroups ? itemGroups : {});
-
-    } catch (error) {
-      next(error);
-    }
-  },
-  async hideProduct(req, res, next) {
-    try {
-        let item = await Product.updateOne({
-          _id: req.body.id
-        }, {
-          $set: {
-            hidden: !req.body.hide,
-          }
-        }, {
-          upsert: true
-        }, function(err, doc) {
-          if (err) return res.send(500, {
-            error: err
+      if(body.mainImage){
+        const validMainImage = await _validateUploads([body.mainImage]);
+        if(!validMainImage){
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid main images'
+            });  
+        }
+      }
+      const update = await Product.updateOne({ _id: convertObjectId(product_id) },body);
+      if(update.nModified == 0){
+          return res.status(404).json({
+              status: 404,
+              message: 'Product not found',
           });
-          return res.status(200).send(doc);
-        });
-    } catch (error) {
-      next(error);
-    }
-  },
-  async filtredProducts(req, res, next) {
-    try {
-      let user = req.user;
-      let itemGroups = await Product.find({
-        deleted: false
-      }).where('group_id').in(req.body.groups).where('category_id').in(req.body.categories).where('shop_id').in(req.body.shops).populate('unit_id').populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id');
-      res.status(200).send(itemGroups);
+      }
+      if(req.body.isSpecial){
+        if(req.body.special_cat_id){
+          let special_cat = await ItemsCategory.findOne({ _id: convertObjectId(req.body.special_cat_id) });
+          if(!special_cat){
+            return res.status(400).json({message: "Special category not found"});
+          }
+          let hero_product_mapping = await category_hero_product.findOne({ product: convertObjectId(product_id) });
+          if(hero_product_mapping && hero_product_mapping.category !== convertObjectId(req.body.special_cat_id)){
+            if( ( special_cat.isKenf && hero_product_mapping.group !==  convertObjectId(body.group)) || ( !special_cat.isKenf )){
+              await hero_product_mapping.remove();
+            }
+            hero_product_mapping = undefined;
+          }
+          if(special_cat.isKenf){
+            hero_product_mapping = await category_hero_product.findOne({ category: convertObjectId(req.body.special_cat_id) , group: undefined });
+          }
+          else{
+            hero_product_mapping = await category_hero_product.findOne({ category: convertObjectId(req.body.special_cat_id), group: convertObjectId(body.group) });
+          }
+          if(hero_product_mapping){
+            hero_product_mapping.product = convertObjectId(product_id);
+            await hero_product_mapping.save();
+          }
+          else{
+            if(special_cat.isKenf){
+              await category_hero_product.create({ product: convertObjectId(product_id), category: convertObjectId(req.body.special_cat_id) });
+            } else{
+              await category_hero_product.create({ product: convertObjectId(product_id), category: convertObjectId(req.body.special_cat_id), group: convertObjectId(body.group) });
+            }
+          }
+        }
+      }
+      return res.status(200).json({
+          status: 200,
+          message: 'Product updated'
+      });  
+  }
+  catch(e){
+      logger.error(e);
+      return res.status(500).json({
+          status: 500,
+          message: 'Internal server error'
+      });  
+  }
+});
 
-    } catch (error) {
-      next(error);
-    }
-  },
-  async generateBarcodeProducts(req, res, next) {
-    console.log('generatebarcode', req.body)
-    try {
-      let user = req.user;
-      let id = req.body.id;
-      let barcode = req.body.barcode;
-      let doc = await Product.findOneAndUpdate({
-        _id: id
-      }, {
-        barcode: barcode,
-      }, {
-        new: true
+const deleteProduct = catchAsync(async (req, res, next) => {
+  const productId = req.params.id;
+  const product = await Product.findOne({ _id: convertObjectId(productId) },'id');
+  if(!product){
+      return res.status(404).json({
+          status: 404,
+          message: 'Product not found',
       });
+  }
+  await product.remove();
+  return res.status(200).json({
+      status: 200,
+      message: 'Product deleted successfully.',
+  });
+});
 
-      console.log('generateserver',doc.barcode)
-      res.status(200).json({barcode: doc.barcode});
-
-    } catch (error) {
-      next(error);
+const getProductAdmin = catchAsync(async (req, res, next) => {
+  try{
+    let query = pick(req.query, ['id', 'barcode']);
+    if(query.id){
+      query._id = convertObjectId(query.id);
+      delete query.id;
     }
-  },
-  async getBarcodeProducts(req, res, next) {
-    try {
-      let user = req.user;
-      let barcode = req.query.barcode;
-      console.log('getbarcode', barcode)
-      var JsBarcode = require('jsbarcode');
-      var {
-        createCanvas
-      } = require("canvas");
-      var canvas = createCanvas();
-      JsBarcode(canvas, barcode);
-
-
-      //ending the response by sending the image buffer to the browser
-      res.status(200).send(JSON.stringify(canvas.toDataURL("image/png")));
-
-      //ending the response by sending the image buffer to the browser
-
-    } catch (error) {
-      next(error);
+    let product = await Product.findOne(query)
+                            .populate('unit')
+                            .populate('images')
+                            .populate('mainImage')
+                            .populate('shop')
+                            .populate('purity')
+                            .populate('category');
+    if(!product){
+      return res.status(404).json({
+        status: 404,
+        message: 'Product not found.',
+      });
     }
-  },
-  async scanBarcodeProducts(req, res, next) {
-    try {
-      let barcode = req.query.barcode;
-      let itemGroups = await Product.findOne({
-        barcode: barcode,
-        deleted: false
-      }).populate('unit_id').populate('unit_id').populate('images').populate('group_id').populate('shop_id').populate('purity_id').populate('category_id');
+    product = product.toJSON();
+    let special_cat = await category_hero_product.findOne({ product: product.id }).populate('category').populate('group');
+    product.special_cat = special_cat;
+    return res.status(200).json({
+      status: 200,
+      message: '',
+      data: product
+    });
+  }
+  catch(e){
+    return res.status(404).json({
+      status: 404,
+      message: 'Product not found.',
+    });
+  }
+});
 
-        res.status(200).send(itemGroups);
+const getProductListAdmin = catchAsync(async (req, res, next) => {
+  const filter = pick(req.query, ['categories', 'groups','shops','search']);
+  const options = pick(req.query, ['sort', 'limit', 'page']);
+  if(filter.categories){
+    filter.category = { $in: filter.categories };
+    delete filter.categories;
+  }
+  if(filter.groups){
+    filter.group = { $in: filter.groups };
+    delete filter.groups;
+  }
+  if(filter.shops){
+    filter.shop = { $in: filter.shops };
+    delete filter.shops;
+  }
+  if(filter.search && search.search !== ''){
+    filter["$text"] = {$search: filter.search};
+    delete filter.search;
+  }
+  if(!options.sort || options.sort === ''){
+      options.sort = "-createdAt";
+  }
+  options.populate = ['unit', 'mainImage','images','group','shop','purity','category'];
+  //options.select = "_id name_ar name_en active";
+  const result = await Product.paginate(filter, options);
+  return res.status(200).json({
+      status: 200,
+      message: '',
+      data: result
+  });
+});
 
-    } catch (error) {
-      next(error);
+const getProductListApp = catchAsync(async (req, res, next) => {
+  const filter = pick(req.query, ['isExclusive','group','category','purity','color','kenf_collection']);
+  const options = pick(req.query, ['sort', 'limit', 'page']);
+  if(!options.sort || options.sort === ''){
+      options.sort = "-createdAt";
+  }
+  if(filter.group){
+    filter.group = { $in:filter.group }
+  }
+  if(filter.color){
+    filter.color = { $in:filter.color }
+  }
+  if(filter.purity){
+    filter.purity = { $in:filter.purity }
+  }
+  filter.active = true;
+  filter.hidden = false;
+  options.populate = [{ path: 'mainImage', select: 'id link'},{ path: 'images', select: 'id link'}];
+  options.select = { id: 1, name_ar: 1, name_en: 1, mainImage: 1, images: { $first: '$images' }, extra_price: 1 };
+  const result = await Product.paginate(filter, options);
+  return res.status(200).json({
+      status: 200,
+      message: '',
+      data: result
+  });
+});
+
+const productIsAvailable = catchAsync(async (req, res, next) => {
+  const productId = convertObjectId(req.params.id);
+  const update = await Product.updateOne({ _id: productId },{
+    $inc: {
+      visited: 1
     }
-  },
-  async getProductAdmin(req, res, next) {
-    try {
-      let query = { deleted: false };
-      let page = 1;
-      if(req.query.page){
-          page = req.query.page;
+  });
+  if(update.nModified === 0){
+        return res.status(404).json({
+            status: 404,
+            message: 'Product not found',
+        });
+  }
+  const product = await Product.exists({ _id: productId, quantity: { $gt: 0 } });
+  return res.status(200).json({
+      status: 200,
+      message: '',
+      data: {
+        available: product ? true : false,
       }
-      let limit = 10;
-      if(req.query.limit){
-          limit = req.query.limit;
-          if(limit > 100){
-              limit = 100;
-          }
-      }
-      let options = {
-          sort: { createdAt: -1 },
-          page,
-          limit,
-          populate: ['unit_id','images','group_id','shop_id','purity_id','category_id'],
-      };
-      if(req.query.categories){
-        let categories = JSON.parse(req.query.categories);
-        if(Array.isArray(categories)){
-            query.category_id = { $in: categories };
-        }
-      }
-      if(req.query.groups){
-        let groups = JSON.parse(req.query.groups);
-        if(Array.isArray(groups)){
-            query.group_id = { $in: groups };
-        }
-      }
-      if(req.query.shops){
-        let shops = JSON.parse(req.query.shops);
-        if(Array.isArray(shops)){
-            query.shop_id = { $in: shops };
-        }
-      }
-      if(req.query.search){
-        query["$text"] = {$search: req.query.search.toLowerCase()};
-      }
-      let data = await Product.paginate(query,options);
-      return res.status(200).json(data);
-    } catch(error) {
-      next(error);
+  });
+});
+
+const getProductApp = catchAsync(async (req, res, next) => {
+  const productId = convertObjectId(req.params.id);
+  let product = await Product.findOne(
+    { 
+      _id: productId, active: true 
+    },
+    'id name_en name_ar category kenf_collection purity weight quantity extra_price group description_ar description_en images mainImage meta'
+    ).populate('images','id link')
+    .populate('mainImage','id link')
+    .populate('purity','id name_en name_ar');
+  if(!product){
+    return res.status(404).json({
+        status: 404,
+        message: 'Product not found'
+    });
+  }
+  product = product.toJSON();
+  product.images = product.images?.filter((val)=>(val != null));
+  if(!product.quantity || product.quantity <= 0){
+    product.outofStock = true;
+  }
+  else{
+    product.outofStock = false;
+  }
+  delete product.quantity;
+  if(req.user?.id){
+    const isFavorite = await Favorite.exists({ user: req.user.id, product: productId });
+    product.isFavorite = isFavorite;
+  }
+  await Product.updateOne({ _id: productId, active: true },{
+    $inc: {
+      visited: 1
+    }
+  });
+
+  const similiarProducts1 = await Product.find({ category: product.category, group: product.group, _id: { $ne: product.id }, active: true, hidden: false },{ id: 1, images: { $first: "$images" }, mainImage: 1, name_en: 1, name_ar: 1, extra_price: 1 }).limit(8).populate([{ path : 'mainImage', select: 'id link'}, { path : 'images', select: 'id link' }]);
+  const similiarProducts2 = await Product.find({ category: product.category, group: { $ne: product.group }, active: true, hidden: false },{ id: 1, images: { $first: "$images" }, mainImage: 1, name_en: 1, name_ar: 1, extra_price: 1 }).limit(8).populate([{ path : 'mainImage', select: 'id link'}, { path : 'images', select: 'id link' }]);
+
+
+  product.similarProducts = [
+    similiarProducts1,
+    similiarProducts2
+  ];
+
+  return res.status(200).json({
+      status: 200,
+      message: '',
+      data: product
+  });
+});
+
+const findProducts = catchAsync(async(req,res,next)=>{
+  const productIds = req.query.products.map((id)=>convertObjectId(id));
+  const products = await Product.find({ _id: { $in: productIds }, active: true },{ id: 1, name_en: 1, name_ar: 1, images: { $first: "$images" }, mainImage: 1, extra_price: 1, quantity: 1 }).populate([
+    { path: 'images', select: 'id link' },
+    { path: 'mainImage', select: 'id link' }
+  ]);
+  return res.status(200).json({
+    status: 200,
+    message: '',
+    data: products
+  });
+});
+
+const _validateForeignIds = async(body)=>{
+  if(body.category !== undefined){
+    const category_exists = await ItemsCategory.exists({ _id: body.category });
+    if(!category_exists){
+      throw new ApiError(400,'Invalid category id');
+    }
+  }
+  if(body.kenf_collection !== undefined){
+    const kenf_category_exists = await ItemsCategory.exists({ _id: body.kenf_collection });
+    if(!kenf_category_exists){
+      throw new ApiError(400,'Invalid kenf_collection id');
+    }
+  }
+  if(body.purity !== undefined){
+    const purity_exists = await Purity.exists({ _id: body.purity });
+    if(!purity_exists){
+      throw new ApiError(400,'Invalid purity id');
+    }
+  }
+  if(body.shop !== undefined){
+    const shop_exists = await Shop.exists({ _id: body.shop });
+    if(!shop_exists){
+      throw new ApiError(400,'Invalid shop id');
+    }
+  }
+  if(body.group !== undefined){
+    const group_exists = await ItemGroup.exists({ _id: body.group });
+    if(!group_exists){
+      throw new ApiError(400,'Invalid group id');
+    }
+  }
+  if(body.unit !== undefined){
+    const unit_exists = await Unit.exists({ _id: body.unit });
+    if(!unit_exists){
+      throw new ApiError(400,'Invalid unit id');
+    }
+  }
+  if(body.ringSize !== undefined){
+    const ring_size_exists = await ItemSize.exists({ _id: body.ringSize });
+    if(!ring_size_exists){
+      throw new ApiError(400,'Invalid ringSize id');
     }
   }
 };
+
+const _validateUploads = async(ids) => {
+  for(let i=0;i<ids.length;i++){
+      ids[i] = convertObjectId(ids[i]);
+  }
+  const count = await Upload.countDocuments({ _id: { $in: ids } });
+  if(ids.length != count){
+      return false;
+  }
+  return true;
+}
+
+module.exports = {
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getProductListAdmin,
+  getProductListApp,
+  productIsAvailable,
+  getProductAdmin,
+  getProductApp,
+  findProducts,
+}

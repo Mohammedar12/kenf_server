@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const purity = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   name_ar: {
     type: String,
   },
@@ -18,11 +12,8 @@ const purity = new Schema({
   },
   active: {
     type: Boolean,
-    default: true
-  },
-  deleted: {
-    type: Boolean,
-    default: false
+    default: true,
+    index: true,
   },
 }, {
   timestamps: true
@@ -36,12 +27,9 @@ purity.set('toJSON', {
   }
 });
 
-purity.plugin(autoIncrementSQ, {
-  id: "purity_id",
-  inc_field: "_id"
-});
 purity.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+purity.plugin(mongoosePaginate);
 
-export default mongoose.model('purity', purity);
+module.exports = mongoose.model('purity', purity);

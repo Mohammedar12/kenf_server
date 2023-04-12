@@ -1,23 +1,23 @@
-import mongoose, {
-    Schema
-  } from "mongoose";
-  import mongooseI18nLocalize from 'mongoose-i18n-localize';
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
   
   
   const category_hero_product = new Schema({
     product: {
-        type: Number,
+        type: Schema.Types.ObjectId,
         ref: 'product',
         required: true,
         index: true
     },
     category: {
-        type: Number,
+        type: Schema.Types.ObjectId,
         ref: 'items_category',
         required: true
     },
     group: {
-        type: Number,
+        type: Schema.Types.ObjectId,
         ref: 'items_group'
     }
   }, {
@@ -38,5 +38,5 @@ import mongoose, {
     locales: ['ar', 'en']
   });
   
-  export default mongoose.model('category_hero_product', category_hero_product);
+  module.exports = mongoose.model('category_hero_product', category_hero_product);
   

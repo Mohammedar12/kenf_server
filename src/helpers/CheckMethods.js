@@ -1,9 +1,9 @@
-import ApiError from './ApiError';
-import i18n from 'i18n'
-import { validationResult } from 'express-validator/check';
-import { matchedData } from 'express-validator/filter';
+const ApiError = require('./ApiError');
+const i18n = require('i18n');
+const { validationResult } = require('express-validator/check');
+const { matchedData } = require('express-validator/filter');
 
-export const checkExist = async (id, Model, extraQuery = {}, errorMessage = '') => {
+const checkExist = async (id, Model, extraQuery = {}, errorMessage = '') => {
     if (typeof extraQuery != 'object') {
         errorMessage = extraQuery;
         extraQuery = {};
@@ -16,7 +16,7 @@ export const checkExist = async (id, Model, extraQuery = {}, errorMessage = '') 
     throw new ApiError(404, errorMessage || `${Model.modelName} Not Found`);
 };
 
-export function checkLanguage( arModel, enModel , req) {
+function checkLanguage( arModel, enModel , req) {
     var language = i18n.getLocale(req);
     try {
         if (language == 'ar'){
@@ -30,7 +30,7 @@ export function checkLanguage( arModel, enModel , req) {
     }
 }
 
-export const checkExistThenGet = async (id, Model, findQuery = { populate: '', select: '' }, errorMessage = '') => {
+const checkExistThenGet = async (id, Model, findQuery = { populate: '', select: '' }, errorMessage = '') => {
     let populateQuery = findQuery.populate || '', selectQuery = findQuery.select || '';
 
     if (typeof findQuery != 'object') {
@@ -55,7 +55,7 @@ function deleteTempImages(req) {
 
 }
 
-export function deleteImages(images) {
+function deleteImages(images) {
     if (images.length && images.length > 0) {
         images.forEach(element => {
             if (fs.existsSync('.'+element))
@@ -66,7 +66,7 @@ export function deleteImages(images) {
     }
 }
 
-export const  createPromise = (query) => {
+const  createPromise = (query) => {
     let newPromise = new Promise(async (resolve, reject) => {
         try {
             const result = await query;
@@ -78,9 +78,9 @@ export const  createPromise = (query) => {
     return newPromise;
 }
 
-export const localeFn = (localeName) => (value, { req }) => req.__(localeName);
+const localeFn = (localeName) => (value, { req }) => req.__(localeName);
 
-export function checkValidations(req) {
+function checkValidations(req) {
     const validationErrors = validationResult(req).array({ onlyFirstError: true });
 
     if (validationErrors.length > 0) {
@@ -91,7 +91,7 @@ export function checkValidations(req) {
     return matchedData(req);
 }
 
-export function handleImgs(req, { attributeName = 'images', isUpdate = false } = {}, errMessage = '') {
+function handleImgs(req, { attributeName = 'images', isUpdate = false } = {}, errMessage = '') {
     if (req.files && req.files.length > 0 || (isUpdate && req.body[attributeName])) { // .files contain an array of 'images'
         let images = [];
         if (isUpdate && req.body[attributeName]) {
@@ -109,14 +109,14 @@ export function handleImgs(req, { attributeName = 'images', isUpdate = false } =
     throw new ApiError.UnprocessableEntity(`${attributeName} are required`) || errMessage;
 }
 
-export function handleImg(req, { attributeName = 'img', isUpdate = false } = {}) {
+function handleImg(req, { attributeName = 'img', isUpdate = false } = {}) {
     if (req.file || (isUpdate && req.body[attributeName]))
         return req.body[attributeName] || toImgUrl(req, req.file);
 
     throw new ApiError.UnprocessableEntity(`${attributeName} is required`);
 }
 
-export function handleFiles(req, { attributeName = 'files', isUpdate = false } = {}) {
+function handleFiles(req, { attributeName = 'files', isUpdate = false } = {}) {
     if (req.files && req.files.length > 0 || (isUpdate && req.body[attributeName])) {
         let files = [];
         if (isUpdate && req.body[attributeName]) {
@@ -134,7 +134,7 @@ export function handleFiles(req, { attributeName = 'files', isUpdate = false } =
     throw new ApiError.UnprocessableEntity(`${attributeName} are required`);
 }
 
-export function parseObject(arrayOfFields, update = false, fieldName = 'body') {
+function parseObject(arrayOfFields, update = false, fieldName = 'body') {
     return (req, res, next) => {
         try {
             for (let index = 0; index < arrayOfFields.length; index++) {
@@ -151,7 +151,7 @@ export function parseObject(arrayOfFields, update = false, fieldName = 'body') {
     }
 }
 
-export function fieldhandleImg(req, { attributeName = 'images', isUpdate = false } = {}) {
+function fieldhandleImg(req, { attributeName = 'images', isUpdate = false } = {}) {
     if (req.files && req.files[attributeName].length > 0 || (isUpdate && req.body[attributeName])) { // .files contain an array of 'images'
         let images = [];
         for (let index = 0; index < req.files[attributeName].length; index++) {
@@ -163,7 +163,7 @@ export function fieldhandleImg(req, { attributeName = 'images', isUpdate = false
     throw new ApiError.UnprocessableEntity(`${attributeName} are required`);
 }
 
-export function removeFile(file = '', files = []) {
+function removeFile(file = '', files = []) {
     if (files.length > 0) {
         files.forEach(element => {
             fs.unlink(element, (err) => {
@@ -177,12 +177,37 @@ export function removeFile(file = '', files = []) {
     }
 }
 
-export const validId = id => isNumeric(id);
-export const validIds = ids => isArray(ids) && ids.every(id => validId(id));
-export const isNumeric = value => Number.isInteger(parseInt(value));
-export const isArray = values => Array.isArray(values);
-export const isImgUrl = value => /\.(jpeg|jpg|png|PNG|JPG|JPEG)$/.test(value);
-export const isLat = value => /^\(?[+-]?(90(\.0+)?|[1-8]?\d(\.\d+)?)$/.test(value);
-export const isLng = value => /^\s?[+-]?(180(\.0+)?|1[0-7]\d(\.\d+)?|\d{1,2}(\.\d+)?)\)?$/.test(value);
-export const isYear = value => /^\d{4}$/.test(value);
-export const isInternationNo = value => /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value);
+const validId = id => isNumeric(id);
+const validIds = ids => isArray(ids) && ids.every(id => validId(id));
+const isNumeric = value => Number.isInteger(parseInt(value));
+const isArray = values => Array.isArray(values);
+const isImgUrl = value => /\.(jpeg|jpg|png|PNG|JPG|JPEG)$/.test(value);
+const isLat = value => /^\(?[+-]?(90(\.0+)?|[1-8]?\d(\.\d+)?)$/.test(value);
+const isLng = value => /^\s?[+-]?(180(\.0+)?|1[0-7]\d(\.\d+)?|\d{1,2}(\.\d+)?)\)?$/.test(value);
+const isYear = value => /^\d{4}$/.test(value);
+const isInternationNo = value => /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value);
+
+module.exports = {
+    checkExist,
+    checkLanguage,
+    checkExistThenGet,
+    deleteImages,
+    createPromise,
+    localeFn,
+    checkValidations,
+    handleImgs,
+    handleImg,
+    handleFiles,
+    parseObject,
+    fieldhandleImg,
+    removeFile,
+    validId,
+    validIds,
+    isNumeric,
+    isArray,
+    isImgUrl,
+    isLat,
+    isLng,
+    isYear,
+    isInternationNo
+}

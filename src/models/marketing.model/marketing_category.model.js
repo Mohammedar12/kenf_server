@@ -1,15 +1,9 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
-
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const marketing_category = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   name_ar: {
     type: String,
   },
@@ -19,10 +13,6 @@ const marketing_category = new Schema({
   active: {
     type: Boolean,
     default: true
-  },
-  deleted: {
-    type: Boolean,
-    default: false
   },
 }, {
   timestamps: true
@@ -36,13 +26,9 @@ marketing_category.set('toJSON', {
   }
 });
 
-marketing_category.plugin(autoIncrementSQ, {
-  id: "marketing_category_id",
-  inc_field: "_id"
-});
-
 marketing_category.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+marketing_category.plugin(mongoosePaginate);
 
-export default mongoose.model('marketing_category', marketing_category);
+module.exports = mongoose.model('marketing_category', marketing_category);

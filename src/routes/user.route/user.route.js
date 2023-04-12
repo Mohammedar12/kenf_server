@@ -1,38 +1,47 @@
-import express from 'express';
-import userController from '../../controllers/user.controller/user.controller';
-import requireAuth from '../../middlewares/auth';
+const express = require('express');
+const validate = require('../../middlewares/validate');
+const auth = require('../../middlewares/auth');
+const userValidation = require('../../validations/user.validation');
+const userController = require('../../controllers/user.controller/user.controller');
 
-const router = express.Router();
+const router = express.Router()
 
-router.post('/emailverify', userController.EmailVerification);
-router.post('/phoneverify', userController.PhoneVerification);
-router.post('/register', userController.registerUser);
-
-router.route('/getProfile')
-  .post(userController.getProfile)
+router.route('/')
+    .get(auth('admin'), validate(userValidation.getUserList), userController.getUserList)
+    .post(auth('admin'), validate(userValidation.createUser), userController.createUser);
 
 router.route('/profile')
-  .post(userController.saveProfile);
+    .get(auth(), userController.getProfile)
+    .put(auth(), validate(userValidation.updateProfile), userController.updateProfile);
 
-router.post('/saveAddress', userController.saveAddress);
+router.post('/profile/profilePicture', auth(), userController.uploadProfilePicture);
 
-router.route('/signup')
-  .post( userController.validateUserCreateBody(), userController.userSignUp);
+router.route('/cart')
+    .get(auth('admin',true),userController.getCart)
+    .post(validate(userValidation.updateCart),userController.updateCart)
+    .delete(userController.clearCart);
 
-router.put( '/updateToken', userController.validateUpdateToken(), userController.updateToken);
+router.route('/cart/import_from_favorites').post(auth(),userController.addToCartFromFavorites);
 
-router.post('/user/addUser', userController.validateAddUser(), userController.addUser);
+router.route('/favorite')
+    .get(auth(), validate(userValidation.getFavoriteList),userController.getFavoriteList)
+    .post(auth(), validate(userValidation.addToFavorite),userController.addToFavorite)
 
-router.post('/signin', userController.validateUserSignin(), userController.signIn);
-router.post('/verify-signin', userController.validateVerifySign(), userController.verifySignIn);
-router.route('/verify-phone').put(userController.validateVerifyPhone(), userController.verifyPhone)
-router.route('/resend-code').post(userController.validateResendCode(), userController.resendCode)
-router.route('/user/group')
-  .get(requireAuth, userController.getUserGroup)
-  .post(requireAuth, userController.validateUserGroup(), userController.userGroup)
-  .delete(requireAuth, userController.delUserGroup);
-router.route('/user/all').get(requireAuth, userController.getUsers);
-router.post('/user/upload', requireAuth, userController.upload);
-router.get('/getfile', userController.getFile);
+router.route('/favorite/all').delete(auth(), userController.removeAllFavorite);
+router.route('/favorite/:id').delete(auth(),validate(userValidation.favoriteDelete) , userController.removeFromFavorite);
 
-export default router;
+router.route('/group')
+    .get(auth('admin'),validate(userValidation.getUserGroupList), userController.getUserGroupList)
+    .post(auth('admin'),validate(userValidation.createUserGroup), userController.createUserGroup);
+
+router.route('/group/:id')
+    .get(auth('admin'), validate(userValidation.groupId), userController.getUserGroup)
+    .delete(auth('admin'), validate(userValidation.groupId),userController.deleteUserGroup)
+    .put(auth('admin'), validate(userValidation.updateUserGroup), userController.updateUserGroup);
+
+router.route('/:id')
+    .get(auth('admin'), validate(userValidation.userId), userController.getUser)
+    .put(auth('admin'), validate(userValidation.updateUser), userController.updateUser)
+    .delete(auth('admin'), validate(userValidation.userId), userController.deleteUser);
+
+module.exports = router;

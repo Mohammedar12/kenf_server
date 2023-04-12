@@ -1,51 +1,21 @@
-import express from 'express';
-import orderController from '../../controllers/order.controller/order.controller';
-import requireAuth from '../../middlewares/auth';
+const express = require('express');
+const orderController = require('../../controllers/order.controller/order.controller');
+const validate = require('../../middlewares/validate');
+const auth = require('../../middlewares/auth');
+const orderValidation = require('../../validations/order.validation');
 
 const router = express.Router();
 
-router.route('/refreshToken')
-  .get(orderController.getAccessToken);
+router.route('/').get(auth(),validate(orderValidation.ordersList),orderController.ordersList);
 
-router.route('/initiateSession')
-  .get(orderController.initiateSession);
+router.route('/').put(auth('admin'),validate(orderValidation.updateOrder),orderController.updateOrder);
 
-router.route('/executePayment')
-  .post(orderController.executePayment);
+router.route('/invoice').get(auth(),validate(orderValidation.invoicesList),orderController.invoicesList);
 
-router.route('/invoice')
-  .post(orderController.getInvoice);
+router.route('/invoice/:id').get(auth(),validate(orderValidation.orderId),orderController.getInvoice);
 
-// router.route('/getPaymentStatus')
-//   .post(orderController.getPaymentStatus);
+router.route('/:id').get(auth(),validate(orderValidation.orderId),orderController.getOrder);
 
-router.route('/createPickupLocation')
-  .post(orderController.createPickupLocation);
+router.route('/:id').delete(auth('admin'),validate(orderValidation.orderId),orderController.deleteOrder);
 
-
-router.route('/paymentStatus')
-  .post(orderController.paymentStatus);
-  
-// router.route('/createOrder')
-//   .post(orderController.createOrder);
-
-router.route('/getOrders')
-  .post(orderController.getOrders);
-
-router.route('/updateOrders')
-  .post(orderController.updateOrders);
-
-router.route('/delOrders')
-  .delete(orderController.delOrders);
-
-router.route('/invoices/list')
-  .get(requireAuth, orderController.getInvoices);
-
-router.route('/invoices/:id')
-  .get(requireAuth, orderController.getInvoiceById);
-  
-router.route('/')
-  .get(orderController.getOrderList)
-  .post(requireAuth, orderController.addorder)
-
-export default router;
+module.exports = router;

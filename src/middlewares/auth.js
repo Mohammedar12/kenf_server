@@ -1,15 +1,71 @@
-const jwt = require("jsonwebtoken");
+const config = require('../config/config');
 
-module.exports = (req, res, next) => {
-    try {
-        const token = req.header("x-auth-token");
-        if (!token) return res.status(403).send("Access denied.");
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log(decoded);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        res.status(401).send("Invalid token");
+const auth = (roles,allow_if_app = false) => (req, res, next) => {
+    if(req.session?.user?.id){
+        if(!roles || roles === '' || roles === []){
+            req.user = req.session.user;
+            next();
+        }
+        else if(Array.isArray(roles)){
+            if(roles.includes(req.session.user.role)){
+                req.user = req.session.user;
+                next();
+            }
+            else{
+                if(allow_if_app){
+                    if(req.headers.token === config.frontendToken){
+                        req.user = req.session.user;
+                        next();
+                    }
+                }
+                else{
+                    res.status(403).send({
+                        status: 403,
+                        message: "Unauthorized request"
+                    });
+                }
+            }
+        }
+        else{
+            if(roles === req.session.user.role){
+                req.user = req.session.user;
+                next();
+            }
+            else{
+                if(allow_if_app){
+                    if(req.headers.token === config.frontendToken){
+                        req.user = req.session.user;
+                        next();
+                    }
+                }
+                else{
+                    res.status(403).send({
+                        status: 403,
+                        message: "Unauthorized request"
+                    });
+                }
+            }
+        }
+    }
+    else{
+        if(allow_if_app){
+            if(req.headers.token === config.frontendToken){
+                next();
+            }
+            else{
+                res.status(401).send({
+                    status: 401,
+                    message: "Unauthenticated request"
+                });
+            }
+        }
+        else{
+            res.status(401).send({
+                status: 401,
+                message: "Unauthenticated request"
+            });
+        }
     }
 };
+module.exports = auth;
+

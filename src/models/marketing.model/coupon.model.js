@@ -1,19 +1,21 @@
-import mongoose, {
-  Schema
-} from "mongoose";
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
-import mongooseI18nLocalize from 'mongoose-i18n-localize';
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 const coupon = new Schema({
-  _id: {
-    type: Number,
-    required: true
-  },
   user: {
     type: String
   },
+  email: {
+    type: String,
+    index: true,
+    lowercase: true,
+  },
   code: {
     type: String,
+    unique: true,
+    uppercase: true,
   },
   discount_type: {
     type: String,
@@ -32,15 +34,11 @@ const coupon = new Schema({
     type: String,
     enum: ['percent', 'fixed']
   },
-  password: {
-    type: String,
-    required: true
-  },
   total_purchase_condition: {
     type: Number
   },
   included_category: {
-    type: Number,
+    type: Schema.Types.ObjectId,
     ref: 'items_category'
   },
   except_discounted_product: {
@@ -54,13 +52,14 @@ const coupon = new Schema({
     type: Date
   },
   freeShipping: {
-    type: [Number],
+    type: [Schema.Types.ObjectId],
     ref: 'shipping',
     default: null
   },
-  deleted: {
+  active: {
     type: Boolean,
-    default: false
+    default: true,
+    index: true
   },
 }, {
   timestamps: true
@@ -73,13 +72,9 @@ coupon.set('toJSON', {
     delete ret.__v;
   }
 });
-
-coupon.plugin(autoIncrementSQ, {
-  id: "coupon_id",
-  inc_field: "_id"
-});
 coupon.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
+coupon.plugin(mongoosePaginate);
 
-export default mongoose.model('coupon', coupon);
+module.exports = mongoose.model('coupon', coupon);

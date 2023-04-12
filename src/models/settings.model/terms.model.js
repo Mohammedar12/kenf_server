@@ -1,7 +1,7 @@
-var mongoose = require('mongoose');
-const autoIncrementSQ = require('mongoose-sequence')(mongoose);
-
-var Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const mongooseI18nLocalize = require('mongoose-i18n-localize');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 var terms = {
   text_ar: {
@@ -25,4 +25,4 @@ termsSchema.set('toJSON', {
 
 var systemInfo = mongoose.model('terms', termsSchema);
 
-export default systemInfo;
+module.exports = systemInfo;
