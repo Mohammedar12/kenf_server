@@ -93,6 +93,7 @@ const executePayment = catchAsync(async(req,res,next)=>{
     else{
         items = body.items;
         items = items.filter((val)=>(val.quantity !== 0));
+        items = items.map((val)=>{return{...val,id: convertObjectId(val.id)};})
         productsIds = items.map((val)=>(convertObjectId(val.id)));
     }
     const products = await Product.find({ _id: { $in: productsIds }, active: true },'id quantity extra_price active');
