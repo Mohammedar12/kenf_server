@@ -260,7 +260,7 @@ const executePayment = catchAsync(async(req,res,next)=>{
 
 const paymentWebhook = catchAsync(async (req, res, next) => {
   const body = pick(req.body,['EventType','Event','DateTime','CountryIsoCode','Data']);
-    const signature = req.headers['MyFatoorah-Signature'];
+    const signature = req.headers['myfatoorah-signature'];
     if(!signature){
         return res.status(401).json({
             status: 401,
