@@ -287,7 +287,7 @@ const paymentWebhook = catchAsync(async (req, res, next) => {
         order.paymentStatus = body.Data.TransactionStatus;
         await order.save();
         for(let i=0;i<order.items.length;i++){
-            await Product.updateOne({ _id: order.items[i].product.id },{ quantity: { $inc: -order.items[i].quantity } })
+            await Product.updateOne({ _id: order.items[i].product._id },{ quantity: { $inc: -order.items[i].quantity } })
         }
         let date = new Date();
         let orderId = date.getTime();
@@ -311,11 +311,11 @@ const paymentWebhook = catchAsync(async (req, res, next) => {
             },
             items: order.items.map((item) => {
                 return {
-                    productId: item.product.id,
+                    productId: item.product._id,
                     name: item.product.name_en,
                     price: item.price,
                     quantity: item.quantity,
-                    sku: item.product.id,
+                    sku: item.product._id,
                 };
             }),
         };
