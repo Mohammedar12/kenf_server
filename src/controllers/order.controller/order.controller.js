@@ -15,7 +15,7 @@ const ordersList = catchAsync(async(req,res,next)=>{
   if(req.user?.role !== 'admin'){
     filter.customer = convertObjectId(req.user.id);
   }
-  options.select = "id tryoto_id status totalPrice paymentStatus createdAt";
+  options.select = "id tryoto_id status totalPrice paymentStatus paymentInfo.invoiceId createdAt";
   //options.populate = ['unit', 'mainImage','images','group','shop','purity','category'];
   const result = await Order.paginate(filter, options);
   return res.status(200).json({
@@ -36,7 +36,7 @@ const invoicesList = catchAsync(async(req,res,next)=>{
     }
     filter.status = "DELIVERED";
     filter.paymentStatus = "SUCCESS";
-    options.select = "id tryoto_id status totalPrice paymentStatus createdAt";
+    options.select = "id tryoto_id status totalPrice paymentStatus paymentInfo.invoiceId createdAt";
     //options.populate = ['unit', 'mainImage','images','group','shop','purity','category'];
     const result = await Order.paginate(filter, options);
     return res.status(200).json({
@@ -101,7 +101,7 @@ const getInvoice = catchAsync(async(req,res,next)=>{
     if(req.user?.role !== 'admin'){
         filter.customer = convertObjectId(req.user.id);
     }
-    const order = await Order.find(filter,'id tryoto_id shipping items status paymentMethod price discount effectivePrice tax shippingPrice totalPrice paymentInfo.completedAt deliveryInfo billingInfo').populate([
+    const order = await Order.find(filter,'id tryoto_id shipping items status paymentMethod price discount effectivePrice tax shippingPrice totalPrice paymentInfo.completedAt paymentInfo.invoiceId deliveryInfo billingInfo').populate([
         {
             path: 'items.product',
             select: 'id name_en name_er'
