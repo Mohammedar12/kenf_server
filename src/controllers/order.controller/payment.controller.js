@@ -287,7 +287,7 @@ const paymentWebhook = catchAsync(async (req, res, next) => {
         order.paymentStatus = body.Data.TransactionStatus;
         await order.save();
         for(let i=0;i<order.items.length;i++){
-            await Product.updateOne({ _id: order.items[i].product.id },{ quantity: { $inc: -order.items[i].quantity } })
+            await Product.updateOne({ _id: order.items[i].product.id },{ $inc: { quantity: -order.items[i].quantity } })
         }
         let date = new Date();
         let orderId = date.getTime();
