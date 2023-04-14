@@ -210,7 +210,7 @@ const executePayment = catchAsync(async(req,res,next)=>{
         let order = await Order.create({
             shipping: shipping.id,
             customer: user.id,
-            items: items,
+            items: items.map((val)=>({ product: val.id, quantity: val.quantity, price: val.price })),
             ...(coupon && { coupon: coupon.id }),
             price: totalShoppingBag,
             discount: discount,
@@ -287,7 +287,7 @@ const paymentWebhook = catchAsync(async (req, res, next) => {
         order.paymentStatus = body.Data.TransactionStatus;
         await order.save();
         for(let i=0;i<order.items.length;i++){
-            await Product.updateOne({ _id: order.items[i].product._id },{ quantity: { $inc: -order.items[i].quantity } })
+            await Product.updateOne({ _id: order.items[i].product.id },{ quantity: { $inc: -order.items[i].quantity } })
         }
         let date = new Date();
         let orderId = date.getTime();
@@ -311,11 +311,11 @@ const paymentWebhook = catchAsync(async (req, res, next) => {
             },
             items: order.items.map((item) => {
                 return {
-                    productId: item.product._id,
+                    productId: item.product.id,
                     name: item.product.name_en,
                     price: item.price,
                     quantity: item.quantity,
-                    sku: item.product._id,
+                    sku: item.product.id,
                 };
             }),
         };
@@ -384,7 +384,6 @@ const getPaymentStatus = catchAsync(async (req, res, next) => {
         });
     }
 });
-
 
 const _validateWebhookSignature = (body, secret, myFatoorahSignature) => {
     if (body['Event'] === 'RefundStatusChanged') {
