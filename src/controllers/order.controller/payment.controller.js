@@ -350,7 +350,7 @@ const getPaymentStatus = catchAsync(async (req, res, next) => {
             });
         }
         const invoiceId = paymentStatusResponse.data.Data.InvoiceId;
-        const order = await Order.findOne({ "paymentInfo.invoiceId": invoiceId },'id customer');
+        const order = await Order.findOne({ "paymentInfo.invoiceId": invoiceId },'id customer paymentInfo.invoiceId');
         if(!order){
             return res.status(500).json({ 
                 status: 500,
