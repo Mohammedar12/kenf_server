@@ -370,7 +370,7 @@ const getPaymentStatus = catchAsync(async (req, res, next) => {
         if(transaction.TransactionStatus == 'Failed'){
             return res.status(200).json({ IsSuccess: false, transactionStatus: 'Failed', message: transaction.ErrorCode+": "+transaction.Error });
         } else if(transaction.TransactionStatus == 'Succss'){
-            return res.status(200).json({ IsSuccess: true, orderId: order.id, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
+            return res.status(200).json({ IsSuccess: true, orderId: order.paymentInfo.invoiceId, transactionStatus: 'Succss', message: 'Transaction completed successfully.' });
         } else {
             return res.status(200).json({ IsSuccess: false, transactionStatus: transaction.TransactionStatus, message: transaction.ErrorCode+": "+transaction.Error });
         }
