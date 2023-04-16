@@ -47,7 +47,9 @@ class App {
     }
     
     // set security HTTP headers
-    this.app.use(helmet());
+    this.app.use(helmet({
+      crossOriginResourcePolicy: false,
+    }));
     this.app.disable('x-powered-by');
     
     // parse urlencoded request body
@@ -57,7 +59,7 @@ class App {
     this.app.use(compression());
     
     // enable cors
-    this.app.use(cors({credentials: true, origin: [config.client_app_url,config.admin_app_url] }));
+    this.app.use(cors({credentials: true, origin: [config.client_app_url,config.admin_app_url,"http://127.0.0.1:4200"] }));
     
     // limit repeated failed requests to auth endpoints
     if (config.env === 'production') {

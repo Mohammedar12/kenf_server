@@ -102,12 +102,16 @@ const getCouponList = catchAsync(async (req, res, next) => {
   //options.populate = ['unit', 'mainImage','images','group','shop','purity','category'];
   //options.select = "_id name_ar name_en active";
   const result = await Coupon.paginate(filter, options);
-  if(!result || result.totalDocs === 0){
-    return res.status(403).json({
-      status: 403,
-      message: 'Not affiliate user',
-    });
+
+  if(req.user?.role !== 'admin'){
+    if(!result || result.totalDocs === 0){
+      return res.status(403).json({
+        status: 403,
+        message: 'Not affiliate user',
+      });
+    }
   }
+  
   return res.status(200).json({
       status: 200,
       message: '',

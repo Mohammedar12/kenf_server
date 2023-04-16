@@ -215,10 +215,10 @@ const getProductAdmin = catchAsync(async (req, res, next) => {
 });
 
 const getProductListAdmin = catchAsync(async (req, res, next) => {
-  const filter = pick(req.query, ['categories', 'groups','shops','search']);
+  const filter = pick(req.query, ['category', 'groups','shops','search']);
   const options = pick(req.query, ['sort', 'limit', 'page']);
   if(filter.categories){
-    filter.category = { $in: filter.categories };
+    filter.category = { $in: filter.category };
     delete filter.categories;
   }
   if(filter.groups){

@@ -19,7 +19,7 @@ router.route('/coupon/:id')
     .put(auth('admin'), validate(marketValidation.updateCoupon), marketController.updateCoupon);
 
 router.route('/offer')
-    .get(auth('admin'), validate(marketValidation.offerId), marketController.getOfferList)
+    .get(auth('admin'), validate(marketValidation.getOfferList), marketController.getOfferList)
     .post(auth('admin'), validate(marketValidation.createOffer), marketController.createOffer);
 
 router.route('/offer/:id')
@@ -27,7 +27,7 @@ router.route('/offer/:id')
     .put(auth('admin'), validate(marketValidation.updateOffer), marketController.updateOffer);
 
 router.route('/category')
-    .get(auth('admin'), validate(marketValidation.marketingCategoryId), marketController.getMarketingCategoryList)
+    .get(auth('admin'), validate(marketValidation.getMarketingCategoryList), marketController.getMarketingCategoryList)
     .post(auth('admin'), validate(marketValidation.createMarketingCategory), marketController.createMarketingCategory);
 
 router.route('/category/:id')
