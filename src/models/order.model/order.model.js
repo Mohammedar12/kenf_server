@@ -111,6 +111,14 @@ const orderSchema = new Schema({
 });
 orderSchema.index({ coupon: 1, paymentStatus: 1 });
 orderSchema.plugin(mongooseI18nLocalize, { locales: ['ar', 'en'] });
+orderSchema.set('toJSON', {
+    transform: function(doc, ret, options) {
+      ret.id = ret._id;
+      delete ret.password;
+      delete ret._id;
+      delete ret.__v;
+    }
+  });
 orderSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('order', orderSchema);

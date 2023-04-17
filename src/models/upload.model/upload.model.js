@@ -18,4 +18,13 @@ const uploadSchema = new Schema({
     },
 }, { timestamps: true });
 
+uploadSchema.set('toJSON', {
+    transform: function(doc, ret, options) {
+      ret.id = ret._id;
+      delete ret.password;
+      delete ret._id;
+      delete ret.__v;
+    }
+  });
+
 module.exports = mongoose.model('uploads', uploadSchema);

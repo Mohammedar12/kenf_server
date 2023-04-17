@@ -17,8 +17,8 @@ const applyCouponCode = {
 
 const createCoupon = {
   body: Joi.object().keys({
-    user: Joi.string().trim().min(2).max(255).required(),
-    email: Joi.string().trim().lowercase().email().required(),
+    user: Joi.string().trim().min(2).max(255).allow(null, ''),
+    email: Joi.string().trim().lowercase().email().allow(null, ''),
     code: Joi.string().trim().min(2).max(255).alphanum().uppercase().required(),
     discount_type: Joi.string().valid('percent', 'fixed').required(),
     discount: Joi.alternatives().conditional('discount_type',{ is: 'percent', then: Joi.number().min(0).max(100).required(), otherwise: Joi.number().min(0).required() }),
@@ -40,8 +40,8 @@ const updateCoupon = {
     id: Joi.string().custom(objectId).required()
   }),
   body: Joi.object().keys({
-    user: Joi.string().trim().min(2).max(255),
-    email: Joi.string().trim().lowercase().email(),
+    user: Joi.string().trim().min(2).max(255).allow(null, ''),
+    email: Joi.string().trim().lowercase().email().allow(null, ''),
     code: Joi.string().trim().min(2).max(255).alphanum().uppercase(),
     discount_type: Joi.string().valid('percent', 'fixed').when('discount',{ is: Joi.exist(), then: Joi.required() }),
     discount: Joi.alternatives().conditional('discount_type',{ is: 'percent', then: Joi.number().min(0).max(100), otherwise: Joi.number().min(0) }),

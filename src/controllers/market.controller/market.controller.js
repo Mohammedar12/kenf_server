@@ -12,7 +12,7 @@ const catchAsync = require('../../helpers/catchAsync');
 /******************   Coupon    ********************** */
 const createCoupon = catchAsync(async (req,res,next)=>{
   const body = pick(req.body,['user','email','code','discount_type','discount','max_discount','profit','profit_type','total_purchase_condition','included_category','except_discounted_product', 'start_date', 'end_date', 'freeShipping', 'active']);
-  const couponCodeExists = await Coupon.exits({ code: body.code.toUpperCase() });
+  const couponCodeExists = await Coupon.exists({ code: body.code.toUpperCase() });
   if(couponCodeExists){
     return res.status(400).json({
       status: 400,
@@ -30,7 +30,7 @@ const createCoupon = catchAsync(async (req,res,next)=>{
     } 
   }
   if(body.included_category){
-    const categoryExists = await Category.exits({ _id: convertObjectId(body.included_category) });
+    const categoryExists = await Category.exists({ _id: convertObjectId(body.included_category) });
     if(!categoryExists){
       return res.status(400).json({
         status: 400,
@@ -50,7 +50,7 @@ const updateCoupon = catchAsync(async (req,res,next)=>{
   const body = pick(req.body,['user','email','code','discount_type','discount','max_discount','profit','profit_type','total_purchase_condition','included_category','except_discounted_product', 'start_date', 'end_date', 'freeShipping', 'active']);
   const coupon_id = convertObjectId(req.params.id);
   if(body.code){
-    const couponCodeExists = await Coupon.exits({ code: body.code.toUpperCase(), _id: { $ne: coupon_id } });
+    const couponCodeExists = await Coupon.exists({ code: body.code.toUpperCase(), _id: { $ne: coupon_id } });
     if(couponCodeExists){
       return res.status(400).json({
         status: 400,
@@ -69,7 +69,7 @@ const updateCoupon = catchAsync(async (req,res,next)=>{
     } 
   }
   if(body.included_category){
-    const categoryExists = await Category.exits({ _id: convertObjectId(body.included_category) });
+    const categoryExists = await Category.exists({ _id: convertObjectId(body.included_category) });
     if(!categoryExists){
       return res.status(400).json({
         status: 400,

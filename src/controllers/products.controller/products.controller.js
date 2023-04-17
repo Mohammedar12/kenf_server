@@ -6,6 +6,7 @@ const Shop = require('../../models/shop.model/shop.model');
 const ItemGroup = require('../../models/settings.model/items_group.model');
 const ItemSize = require('../../models/settings.model/items_size.model');
 const category_hero_product = require('../../models/settings.model/category_hero_product.model');
+const Upload = require('../../models/upload.model/upload.model');
 const logger = require('../../config/logger');
 const convertObjectId = require('../../helpers/convertObjectId');
 const catchAsync = require('../../helpers/catchAsync');
@@ -187,6 +188,7 @@ const getProductAdmin = catchAsync(async (req, res, next) => {
     let product = await Product.findOne(query)
                             .populate('unit')
                             .populate('images')
+                            .populate('group')
                             .populate('mainImage')
                             .populate('shop')
                             .populate('purity')
@@ -374,8 +376,8 @@ const _validateForeignIds = async(body)=>{
     }
   }
   if(body.purity !== undefined){
-    const purity_exists = await Purity.exists({ _id: body.purity });
-    if(!purity_exists){
+    const purity_count = await Purity.count({ _id: { $in: body.purity } });
+    if(purity_count !== body.purity.length){
       throw new ApiError(400,'Invalid purity id');
     }
   }
@@ -392,8 +394,8 @@ const _validateForeignIds = async(body)=>{
     }
   }
   if(body.unit !== undefined){
-    const unit_exists = await Unit.exists({ _id: body.unit });
-    if(!unit_exists){
+    const unit_count = await Unit.count({ _id: { $in: body.unit } });
+    if(unit_count !== body.unit.length){
       throw new ApiError(400,'Invalid unit id');
     }
   }

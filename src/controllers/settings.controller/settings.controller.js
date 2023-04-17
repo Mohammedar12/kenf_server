@@ -321,7 +321,7 @@ const deleteItemGroup = catchAsync(async (req, res, next) => {
 
 /**************    ItemCategory   ******************* */
 const createItemCategory = catchAsync(async (req, res, next) => {
-    const body = pick(req.body, ['name_en', 'name_ar', 'kenf_collection','abbreviation','isKenf','active','images']);
+    const body = pick(req.body, ['name_en', 'name_ar','abbreviation','isKenf','active','images']);
     try{
         if(body.images){
             const validImages = await _validateUploads(body.images);
@@ -349,7 +349,7 @@ const createItemCategory = catchAsync(async (req, res, next) => {
 });
 
 const updateItemCategory = catchAsync(async (req, res, next) => {
-    const body = pick(req.body, ['name_en', 'name_ar', 'kenf_collection','abbreviation','isKenf','active','images']);
+    const body = pick(req.body, ['name_en', 'name_ar','abbreviation','isKenf','active','images']);
     const itemCategoryId = req.params.id;
     try{
         if(body.images){

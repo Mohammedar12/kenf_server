@@ -119,7 +119,6 @@ const createItemCategory = {
   body: Joi.object().keys({
     name_en: Joi.string().trim().min(2).max(255).required(),
     name_ar: Joi.string().trim().min(2).max(255).required(),
-    kenf_collection: Joi.string().trim().required().min(2).max(255).required(),
     abbreviation: Joi.string().trim().min(1).max(255).required(),
     isKenf: Joi.boolean().required(),
     active: Joi.boolean(),
@@ -134,7 +133,6 @@ const updateItemCategory = {
   body: Joi.object().keys({
     name_en: Joi.string().trim().min(2).max(255),
     name_ar: Joi.string().trim().min(2).max(255),
-    kenf_collection: Joi.string().trim().min(2).max(255),
     abbreviation: Joi.string().trim().min(1).max(255),
     isKenf: Joi.boolean(),
     active: Joi.boolean(),

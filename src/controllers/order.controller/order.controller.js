@@ -16,7 +16,36 @@ const ordersList = catchAsync(async(req,res,next)=>{
     filter.customer = convertObjectId(req.user.id);
   }
   options.select = "id tryoto_id status totalPrice paymentStatus paymentInfo.invoiceId createdAt";
-  //options.populate = ['unit', 'mainImage','images','group','shop','purity','category'];
+  if(req.user?.role === 'admin'){
+    options.select += " items customer";
+    options.populate = [
+        {
+            path: 'items',
+            populate: {
+                path: 'product',
+                select: 'id name_en name_ar extra_price barcode',
+                populate: [
+                    {
+                        path: 'images',
+                        select: 'id link'
+                    },
+                    {
+                        path: 'mainImage',
+                        select: 'id link'
+                    }
+                ]
+            }
+        },
+        {
+            path: 'customer',
+            select: 'id name'
+        },
+        {
+            path: 'coupon',
+            select: 'id code'
+        }
+    ];
+  }
   const result = await Order.paginate(filter, options);
   return res.status(200).json({
       status: 200,
