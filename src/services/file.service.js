@@ -25,7 +25,7 @@ const registerMiddleware = (route,app) => {
             });
         }
     });
-    app.use(route+'/private/user/:id', express.static('uploads/private/user'));
+    app.use(route+'/private/user', express.static('uploads/private/user'));
     _route = route;
 }
 

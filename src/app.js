@@ -66,8 +66,6 @@ class App {
       this.app.use('/api/auth', authLimiter);
     }
     
-    fileService.registerMiddleware('/api/uploads',this.app);
-    
     this.app.use((req, res, next)=> {
         i18n.setLocale(req.headers['accept-language'] || 'ar');
         return next();
@@ -108,6 +106,8 @@ class App {
     this.app.use(xss());
     this.app.use(mongoSanitize());
     
+    fileService.registerMiddleware('/api/uploads',this.app);
+
     // api routes
     this.app.use('/api', router);
     

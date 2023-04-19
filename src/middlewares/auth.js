@@ -39,6 +39,7 @@ const auth = (roles,allow_if_app = false) => (req, res, next) => {
                     }
                 }
                 else{
+                    console.log("sdfsdf2");
                     res.status(403).send({
                         status: 403,
                         message: "Unauthorized request"
