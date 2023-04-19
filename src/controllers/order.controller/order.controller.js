@@ -77,7 +77,7 @@ const invoicesList = catchAsync(async(req,res,next)=>{
 
 const deleteOrder = catchAsync(async(req,res,next)=>{
     const orderId = convertObjectId(req.params.id);
-    const order = await Order.find({ _id: orderId },'id');
+    const order = await Order.findOne({ _id: orderId },'id');
     if(!order){
         return res.status(404).json({
             status: 404,
@@ -93,7 +93,7 @@ const deleteOrder = catchAsync(async(req,res,next)=>{
 
 const getOrder = catchAsync(async(req,res,next)=>{
     const orderId = convertObjectId(req.params.id);
-    const order = await Order.find({ _id: orderId }).populate([
+    const order = await Order.findOne({ _id: orderId }).populate([
         {
             path: 'items.product',
             select: 'id name_en name_er'
@@ -130,7 +130,7 @@ const getInvoice = catchAsync(async(req,res,next)=>{
     if(req.user?.role !== 'admin'){
         filter.customer = convertObjectId(req.user.id);
     }
-    const order = await Order.find(filter,'id tryoto_id shipping items status paymentMethod price discount effectivePrice tax shippingPrice totalPrice paymentInfo.completedAt paymentInfo.invoiceId deliveryInfo billingInfo').populate([
+    const order = await Order.findOne(filter,'id tryoto_id shipping items status paymentMethod price discount effectivePrice tax shippingPrice totalPrice paymentInfo.completedAt paymentInfo.invoiceId deliveryInfo billingInfo').populate([
         {
             path: 'items.product',
             select: 'id name_en name_er weight purity',
