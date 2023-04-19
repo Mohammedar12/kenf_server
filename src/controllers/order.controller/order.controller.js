@@ -133,7 +133,8 @@ const getInvoice = catchAsync(async(req,res,next)=>{
     const order = await Order.find(filter,'id tryoto_id shipping items status paymentMethod price discount effectivePrice tax shippingPrice totalPrice paymentInfo.completedAt paymentInfo.invoiceId deliveryInfo billingInfo').populate([
         {
             path: 'items.product',
-            select: 'id name_en name_er'
+            select: 'id name_en name_er weight purity',
+            populate: 'purity'
         },
         {
             path: 'shipping',
