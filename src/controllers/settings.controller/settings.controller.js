@@ -84,18 +84,20 @@ const deleteShipping = catchAsync(async (req, res, next) => {
     try{
         const shipping = await Shipping.findOne({ _id: convertObjectId(shippingId) },'id');
         if(!shipping){
+            console.log("not");
             return res.status(404).json({
                 status: 404,
                 message: 'Shipping not found',
             });
         }
-        await shipping.remove();
+        await Shipping.deleteOne({ _id: shipping.id });
         return res.status(200).json({
             status: 200,
             message: 'Shipping deleted successfully.',
         });
     }
     catch(e){
+        console.log(e);
         return res.status(404).json({
             status: 404,
             message: 'Shipping not found',
@@ -175,7 +177,7 @@ const deleteItemSize = catchAsync(async (req, res, next) => {
                 message: 'Item Size not found',
             });
         }
-        await itemSize.remove();
+        await ItemSize.deleteOne({ _id: itemSize.id });
         return res.status(200).json({
             status: 200,
             message: 'Item Size deleted successfully.',
@@ -304,7 +306,7 @@ const deleteItemGroup = catchAsync(async (req, res, next) => {
                 message: 'Item Group not found',
             });
         }
-        await itemGroup.remove();
+        await ItemGroup.deleteOne({ _id: itemGroup.id });
         return res.status(200).json({
             status: 200,
             message: 'Item Group deleted successfully.',
@@ -417,7 +419,7 @@ const deleteItemCategory = catchAsync(async (req, res, next) => {
                 message: 'Item Category not found',
             });
         }
-        await itemCategory.remove();
+        await ItemCategory.deleteOne({ _id: itemCategory.id });
         return res.status(200).json({
             status: 200,
             message: 'Item Category deleted successfully.',
@@ -565,7 +567,7 @@ const deletePurity = catchAsync(async (req, res, next) => {
                 message: 'Purity not found',
             });
         }
-        await purity.remove();
+        await Purity.deleteOne({ _id: purity.id });
         return res.status(200).json({
             status: 200,
             message: 'Purity deleted successfully.',
@@ -650,7 +652,7 @@ const deleteOrderStatus = catchAsync(async (req, res, next) => {
                 message: 'Order Status not found',
             });
         }
-        await orderStatus.remove();
+        await OrderStatus.deleteOne({ _id: orderStatus.id });
         return res.status(200).json({
             status: 200,
             message: 'Order Status deleted successfully.',
@@ -735,7 +737,7 @@ const deleteUnit = catchAsync(async (req, res, next) => {
                 message: 'Unit not found',
             });
         }
-        await unit.remove();
+        await Unit.deleteOne({ _id: unit.id });
         return res.status(200).json({
             status: 200,
             message: 'Unit deleted successfully.',
@@ -820,7 +822,7 @@ const deletePaymentMethod = catchAsync(async (req, res, next) => {
                 message: 'Payment Method not found',
             });
         }
-        await paymentMethod.remove();
+        await PaymentMethod.deleteOne({ _id: paymentMethod.id });
         return res.status(200).json({
             status: 200,
             message: 'Payment Method deleted successfully.',
@@ -938,7 +940,7 @@ const deleteComplaint = catchAsync(async (req, res, next) => {
                 }
             }
         }
-        await complaint.remove();
+        await Complaints.deleteOne({ _id: complaint.id });
         return res.status(200).json({
             status: 200,
             message: 'Complaint deleted successfully.',

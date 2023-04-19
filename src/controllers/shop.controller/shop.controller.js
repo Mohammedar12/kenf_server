@@ -116,7 +116,7 @@ const deleteShop = catchAsync(async (req, res, next) => {
               message: 'Shop not found',
           });
       }
-      await shop.remove();
+      await Shop.deleteOne({ _id: shop.id });
       return res.status(200).json({
           status: 200,
           message: 'Shop deleted successfully.',

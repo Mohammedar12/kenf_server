@@ -141,7 +141,7 @@ const deleteUser = catchAsync(async (req, res, next) => {
     if(user.profilePicture){
         fileService.deleteFile(user.profilePicture);
     }
-    await user.remove();
+    await User.deleteOne({ _id: user.id });
     return res.status(200).json({
         status: 200,
         message: 'User deleted successfully.',
@@ -631,7 +631,7 @@ const deleteUserGroup = catchAsync(async (req, res, next) => {
             message: 'User Group not found',
         });
     }
-    await userGroup.remove();
+    await UserGroup.deleteOne({ _id: userGroup.id });
     return res.status(200).json({
         status: 200,
         message: 'User Group deleted successfully.',

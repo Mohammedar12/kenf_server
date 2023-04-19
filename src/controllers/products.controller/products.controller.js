@@ -42,13 +42,13 @@ const createProduct = catchAsync(async (req, res, next) => {
         if(req.body.special_cat_id){
           let special_cat = await ItemsCategory.findOne({ _id: convertObjectId(req.body.special_cat_id) });
           if(!special_cat){
-            await product.remove();
+            await Product.deleteOne({ _id: product.id });
             return res.status(400).json({message: "Special category not found"});
           }
           let hero_product_mapping = await category_hero_product.findOne({ product: product.id });
           if(hero_product_mapping && hero_product_mapping.category !== convertObjectId(req.body.special_cat_id)){
             if( ( special_cat.isKenf && hero_product_mapping.group !==  convertObjectId(body.group)) || ( !special_cat.isKenf )){
-              await hero_product_mapping.remove();
+              await category_hero_product.deleteOne({ _id: hero_product_mapping.id });
             }
             hero_product_mapping = undefined;
           }
@@ -125,7 +125,7 @@ const updateProduct = catchAsync(async (req, res, next) => {
           let hero_product_mapping = await category_hero_product.findOne({ product: convertObjectId(product_id) });
           if(hero_product_mapping && hero_product_mapping.category !== convertObjectId(req.body.special_cat_id)){
             if( ( special_cat.isKenf && hero_product_mapping.group !==  convertObjectId(body.group)) || ( !special_cat.isKenf )){
-              await hero_product_mapping.remove();
+              await category_hero_product.deleteOne({ _id: hero_product_mapping.id });
             }
             hero_product_mapping = undefined;
           }
@@ -171,7 +171,7 @@ const deleteProduct = catchAsync(async (req, res, next) => {
           message: 'Product not found',
       });
   }
-  await product.remove();
+  await Product.deleteOne({ _id: product.id });
   return res.status(200).json({
       status: 200,
       message: 'Product deleted successfully.',

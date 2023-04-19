@@ -156,7 +156,7 @@ const deleteCoupon = catchAsync(async (req, res, next) => {
           message: 'Coupon not found',
       });
   }
-  await coupon.remove();
+  await Coupon.deleteOne({ _id: coupon.id });
   return res.status(200).json({
       status: 200,
       message: 'Coupon deleted successfully.',
@@ -273,7 +273,7 @@ const deleteOffer = catchAsync(async (req, res, next) => {
           message: 'Offer not found',
       });
   }
-  await offer.remove();
+  await Offer.deleteOne({ _id: offer.id });
   return res.status(200).json({
       status: 200,
       message: 'Offer deleted successfully.',
@@ -333,7 +333,7 @@ const deleteMarketingCategory = catchAsync(async (req, res, next) => {
           message: 'Marketing category not found',
       });
   }
-  await category.remove();
+  await MarketingCategory.deleteOne({ _id: category.id });
   return res.status(200).json({
       status: 200,
       message: 'Marketing category deleted successfully.',

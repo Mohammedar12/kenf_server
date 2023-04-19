@@ -158,7 +158,7 @@ const deleteSeller = catchAsync(async (req, res, next) => {
               }
           }
       }
-      await seller.remove();
+      await Seller.deleteOne({ _id: seller.id });
       return res.status(200).json({
           status: 200,
           message: 'Seller deleted successfully.',

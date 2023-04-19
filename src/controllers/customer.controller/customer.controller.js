@@ -72,7 +72,7 @@ const deleteCustomer = catchAsync(async (req, res, next) => {
               message: 'Customer not found',
           });
       }
-      await customer.remove();
+      await Seller.deleteOne({ _id: customer.id });
       return res.status(200).json({
           status: 200,
           message: 'Customer deleted successfully.',
