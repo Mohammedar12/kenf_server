@@ -376,7 +376,7 @@ const _validateForeignIds = async(body)=>{
     }
   }
   if(body.purity !== undefined){
-    const purity_count = await Purity.count({ _id: { $in: body.purity } });
+    const purity_count = await Purity.countDocuments({ _id: { $in: body.purity } });
     if(purity_count !== body.purity.length){
       throw new ApiError(400,'Invalid purity id');
     }
@@ -394,7 +394,7 @@ const _validateForeignIds = async(body)=>{
     }
   }
   if(body.unit !== undefined){
-    const unit_count = await Unit.count({ _id: { $in: body.unit } });
+    const unit_count = await Unit.countDocuments({ _id: { $in: body.unit } });
     if(unit_count !== body.unit.length){
       throw new ApiError(400,'Invalid unit id');
     }

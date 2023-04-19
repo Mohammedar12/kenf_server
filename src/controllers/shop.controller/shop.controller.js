@@ -1,6 +1,7 @@
 const logger = require('../../config/logger');
 const pick = require('../../helpers/pick');
 const Shop = require('../../models/shop.model/shop.model');
+const Upload = require('../../models/upload.model/upload.model');
 const convertObjectId = require('../../helpers/convertObjectId');
 const catchAsync = require('../../helpers/catchAsync');
 
@@ -72,7 +73,7 @@ const getShopList = catchAsync(async (req, res, next) => {
   if(!options.sort || options.sort === ''){
       options.sort = "-createdAt";
   }
-  options.select = "id app_name_en app_name_en app_abbreviation email phone city active createdAt";
+  options.select = "id app_name_en app_name_ar app_abbreviation address_en address_ar email phone city active createdAt";
   const result = await Shop.paginate(filter, options);
   return res.status(200).json({
       status: 200,
@@ -84,10 +85,7 @@ const getShopList = catchAsync(async (req, res, next) => {
 const getShopById = catchAsync(async (req, res, next) => {
     const shopId = req.params.id;
     try{
-        const shop = await Shop.findOne({ _id: convertObjectId(shopId) }).populate({
-            path: 'images',
-            select: { link: 1, file_type: 1 }
-        }).populate('seller');
+        const shop = await Shop.findOne({ _id: convertObjectId(shopId) }).populate('images','id link').populate('seller');
         if(!shop){
             return res.status(404).json({
                 status: 404,

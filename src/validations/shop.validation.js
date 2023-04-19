@@ -14,8 +14,8 @@ const shopId = {
 const createShop = {
   body: JoiExtended.object().keys({
     seller: JoiExtended.string().custom(objectId).required(),
-    name_en: JoiExtended.string().trim().min(2).max(255).required(),
-    name_ar: JoiExtended.string().trim().min(2).max(255).required(),
+    app_name_en: JoiExtended.string().trim().min(2).max(255).required(),
+    app_name_ar: JoiExtended.string().trim().min(2).max(255).required(),
     app_abbreviation: JoiExtended.string().trim().required().min(1).max(255).required(),
     email: JoiExtended.string().trim().lowercase().email().required(),
     phone: JoiExtended.string().phoneNumber({ defaultCountry: 'SA', format: 'e164', strict: true}).required(),
@@ -38,8 +38,8 @@ const updateShop = {
   }),
   body: JoiExtended.object().keys({
     seller: JoiExtended.string().custom(objectId),
-    name_en: JoiExtended.string().trim().min(2).max(255),
-    name_ar: JoiExtended.string().trim().min(2).max(255),
+    app_name_en: JoiExtended.string().trim().min(2).max(255),
+    app_name_ar: JoiExtended.string().trim().min(2).max(255),
     app_abbreviation: JoiExtended.string().trim().min(1).max(255),
     email: JoiExtended.string().trim().lowercase().email(),
     phone: JoiExtended.string().phoneNumber({ defaultCountry: 'SA', format: 'e164', strict: true}),

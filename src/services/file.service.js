@@ -35,8 +35,11 @@ const saveFile = (file, key, type, userId) => {
         file.mv("./"+storage_path+"/public/"+key);
         return _route + "/public/" + key;
     } else if(type === 'private'){
-        file.mv("./"+storage_path+"/private/all/"+userId+"/"+key);
-        return _route + "/private/all/" + userId + "/" + key;
+        file.mv("./"+storage_path+"/private/user/"+userId+"/"+key);
+        return _route + "/private/user/" + userId + "/" + key;
+    }  else if(type === 'auth'){
+        file.mv("./"+storage_path+"/private/all/" + key);
+        return _route + "/private/all/" + key;
     } else if(type === 'admin'){
         file.mv("./"+storage_path+"/private/admin/"+key);
         return _route + "/private/admin/" + key;

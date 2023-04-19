@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const mongooseI18nLocalize = require('mongoose-i18n-localize');
 const mongoosePaginate = require('mongoose-paginate-v2');
+const CustomCounter = require('../counter.model/custom_counter.model.js');
+const Shop = require('../shop.model/shop.model.js');
+const Category = require('../settings.model/items_category.model.js');
+const Group = require('../settings.model/items_group.model.js');
+const Purity = require('../settings.model/purity.model.js');
 const Schema = mongoose.Schema;
 
 const productSchema = new Schema({
@@ -122,5 +127,31 @@ productSchema.plugin(mongooseI18nLocalize, {
   locales: ['en', 'ar']
 });
 productSchema.plugin(mongoosePaginate);
+productSchema.pre('save',function(next){
+  if(this.isNew){
+    let product = this;
+    CustomCounter.findOneAndUpdate({ collection_name: 'product', field_name: 'barcode' }, { $inc: { counter: 1 } },{ upsert: true, new: true }).then(async(results)=>{
+      let shop_abbr = (await Shop.findOne({ _id: product.shop },'app_abbreviation'))?.app_abbreviation;
+      let group_abbr = (await Group.findOne({ _id: product.group },'abbreviation'))?.abbreviation;
+      let category_abbr = (await Category.findOne({ _id: product.category },'abbreviation'))?.abbreviation;
+      let purity = '';
+      if(product.purity && product.purity.length > 0)
+        purity = (await Purity.findOne({ _id: product.purity[0] },'name_en'))?.name_en;
+      if(!shop_abbr)
+        shop_abbr = '';
+      if(!group_abbr)
+        group_abbr = '';
+      if(!category_abbr)
+        category_abbr = '';
+      if(!purity)
+        purity = '';
+      console.log(shop_abbr + '-' + group_abbr + category_abbr + purity + String(results.counter).padStart(5, '0'));
+      product.barcode = shop_abbr + '-' + group_abbr + category_abbr + purity + String(results.counter).padStart(5, '0');
+      next();
+    }).catch((e) =>{
+      next(e);
+    });
+  }
+});
 
 module.exports = mongoose.model('product', productSchema);

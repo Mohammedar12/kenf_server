@@ -972,7 +972,7 @@ const _uploadComplaintImages = (files,userId) => {
             file_names[i] = nanoid() + '.' + file_extensions[i];
         }
         for(let i=0;i<files.length;i++){
-            results[i] = fileService.saveFile(files[i],'complaint/'+file_names[i],'private', userId);
+            results[i] = fileService.saveFile(files[i],'complaint/'+file_names[i],'public', userId);
         }
         
     }
@@ -987,7 +987,7 @@ const _uploadComplaintImages = (files,userId) => {
             throw new ApiError(400,"Invalid file");
         }
         file_names[0] = nanoid() + '.' + file_extensions[0];
-        results[0] = fileService.saveFile(files,'complaint/'+file_names[0],'private', userId);
+        results[0] = fileService.saveFile(files,'complaint/'+file_names[0],'public', userId);
     }
     return results;
 };

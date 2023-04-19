@@ -42,9 +42,9 @@ module.exports = {
   mongoose: {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
     options: {
-      useCreateIndex: envVars.NODE_ENV === 'development' ? true : false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      //useCreateIndex: envVars.NODE_ENV === 'development' ? true : false,
+      //useNewUrlParser: true,
+      //useUnifiedTopology: true,
     },
   },
   email: {

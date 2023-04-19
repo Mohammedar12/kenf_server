@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const convertObjectId = (id) => {
-    return mongoose.Types.ObjectId(id);
+    return new mongoose.Types.ObjectId(id);
 };
 module.exports = convertObjectId;
