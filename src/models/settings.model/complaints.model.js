@@ -47,4 +47,6 @@ complaints.plugin(mongooseI18nLocalize, {
   locales: ['ar', 'en']
 });
 
+complaints.plugin(mongoosePaginate);
+
 module.exports = mongoose.model('complaints', complaints);

@@ -446,10 +446,14 @@ const getItemCategory = catchAsync(async (req, res, next) => {
         let heroProduct;
         if(!groupId){
             heroProduct = await category_hero_product.findOne({
-                category: convertObjectId(categoryId)
+                category: convertObjectId(categoryId),
             }).populate({
                 path : 'product',
-                select: 'id name_ar name_en mainImage images.0',
+                select: 'id name_ar name_en mainImage images.0 quantity',
+                match: {
+                    active: true,
+                    hidden: false,
+                },
                 populate : [
                     {
                         path : 'mainImage',
@@ -467,7 +471,11 @@ const getItemCategory = catchAsync(async (req, res, next) => {
               group: convertObjectId(groupId)
             }).populate({
                 path : 'product',
-                select: 'id name_ar name_en mainImage images.0',
+                select: 'id name_ar name_en mainImage images.0 quantity',
+                match: {
+                    active: true,
+                    hidden: false,
+                },
                 populate : [
                     {
                         path : 'mainImage',
@@ -481,6 +489,13 @@ const getItemCategory = catchAsync(async (req, res, next) => {
         }
         category = category.toJSON();
         if(heroProduct?.product){
+            heroProduct = heroProduct.toJSON();
+            if(!heroProduct.product.quantity || heroProduct.product.quantity <= 0){
+                heroProduct.product.outofStock = true;
+            }
+            else{
+                heroProduct.product.outofStock = false;
+            }
             category.heroProduct = heroProduct.product;
         }
         return res.status(200).json({
@@ -841,13 +856,9 @@ const deletePaymentMethod = catchAsync(async (req, res, next) => {
 const createComplaint = catchAsync(async (req, res, next) => {
     const body = pick(req.body, ['email', 'name', 'title','complaints']);
     try{
-        if(!req.files?.files){
-            return res.status(400).json({
-                status: 400,
-                message: 'Files is required'
-            });
+        if(req.files?.files){
+            body.images = _uploadComplaintImages(req.files.files,req.user.id);
         }
-        body.images = _uploadComplaintImages(req.files.files,req.user.id);
         body.user = req.user.id;
         const complaints = await Complaints.create(body);
         return res.status(200).json({
@@ -875,7 +886,7 @@ const answerComplaint = catchAsync(async (req, res, next) => {
                 message: "Complaint not found"
             });
         }
-        let mailResponse = await sendSendTemplateMail(email, 'Answer of your complaints in kenf', __dirname + '/../answer.html',  { usercode: answer });
+        let mailResponse = await sendSendTemplateMail(complaint.email, 'Answer of your complaints in kenf', __dirname + '/../answer.html',  { usercode: answer });
         if(!mailResponse){
             return res.status(500).send({
                 status: 500,
@@ -910,6 +921,13 @@ const getComplaintList = catchAsync(async (req, res, next) => {
     else{
         filter.user = req.user.id;
         options.select = "id email name title complaints images answer createdAt";
+    }
+    if(req.query.answered === true){
+        filter["$and"] = [{ answer: { $exists: true } },{ answer: { $ne: null }}];
+        //filter.answer = { $and: [ { $exists: true }, { $ne: null }, { $ne: '' } ] };
+    } else if(req.query.answered === false){
+        filter["$or"] = [{ answer: { $exists: false } },{ answer: null },];
+        //filter.answer = { $or: [ { $exists: false }, { $eq: null }, { $eq: '' } ] };
     }
     const result = await Complaints.paginate(filter, options);
     return res.status(200).json({
@@ -974,7 +992,7 @@ const _uploadComplaintImages = (files,userId) => {
             file_names[i] = nanoid() + '.' + file_extensions[i];
         }
         for(let i=0;i<files.length;i++){
-            results[i] = fileService.saveFile(files[i],'complaint/'+file_names[i],'public', userId);
+            results[i] = fileService.saveFile(files[i],'complaint/'+file_names[i],'private', userId);
         }
         
     }
@@ -985,11 +1003,11 @@ const _uploadComplaintImages = (files,userId) => {
         if (!allowed_file_ext.includes(file_extensions[0])) {
             throw new ApiError(400,"Invalid file");
         }
-        if (!allowed_file_mime.includes(files[i].mimetype)) {
+        if (!allowed_file_mime.includes(files.mimetype)) {
             throw new ApiError(400,"Invalid file");
         }
         file_names[0] = nanoid() + '.' + file_extensions[0];
-        results[0] = fileService.saveFile(files,'complaint/'+file_names[0],'public', userId);
+        results[0] = fileService.saveFile(files,'complaint/'+file_names[0],'private', userId);
     }
     return results;
 };

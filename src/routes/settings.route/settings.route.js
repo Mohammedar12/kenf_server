@@ -99,8 +99,8 @@ router.route('/pm/:id')
 
 /**************    Complaints   ******************* */
 router.route('/complaints')
-    .get(validate(settingsValidation.getComplaintList), settingsController.getComplaintList)
-    .post(auth('admin'),validate(settingsValidation.createComplaint), settingsController.createComplaint);
+    .get(auth(),validate(settingsValidation.getComplaintList), settingsController.getComplaintList)
+    .post(auth(),validate(settingsValidation.createComplaint), settingsController.createComplaint);
 
 router.route('/complaints/answer/:id').put(auth('admin'),validate(settingsValidation.answerComplaint), settingsController.answerComplaint);
 

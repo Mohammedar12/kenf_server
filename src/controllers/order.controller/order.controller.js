@@ -7,7 +7,7 @@ const catchAsync = require('../../helpers/catchAsync');
 const config = require('../../config/config');
 
 const ordersList = catchAsync(async(req,res,next)=>{
-  const filter = pick(req.query, []);
+  const filter = {};
   const options = pick(req.query, ['sort', 'limit', 'page']);
   if(!options.sort || options.sort === ''){
       options.sort = "-createdAt";
@@ -15,6 +15,7 @@ const ordersList = catchAsync(async(req,res,next)=>{
   if(req.user?.role !== 'admin'){
     filter.customer = convertObjectId(req.user.id);
   }
+  filter.paymentStatus = "SUCCESS";
   options.select = "id tryoto_id status totalPrice paymentStatus paymentInfo.invoiceId createdAt";
   if(req.user?.role === 'admin'){
     options.select += " items customer";

@@ -320,9 +320,10 @@ const answerComplaint = {
 
 const getComplaintList = {
   query: Joi.object().keys({
+    answered: Joi.boolean(),
     limit: Joi.number().integer().min(5).max(100),
     page: Joi.number().integer().min(1),
-    sort: Joi.string().valid('createdAt','-createdAt','email','-email','name','-name'),
+    sort: Joi.string().valid('createdAt','-createdAt','-updatedAt','email','-email','name','-name'),
   }),
 };
 /************************************************ */
