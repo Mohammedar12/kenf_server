@@ -164,7 +164,7 @@ const deleteCoupon = catchAsync(async (req, res, next) => {
 });
 
 const applyCouponCode = catchAsync(async(req,res,next)=>{
-  const couponCode = req.params.code;
+  const couponCode = req.query.code;
   const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), active: true, $or: [ { start_date: null }, { start_date: { $lte: new Date() } } ], $or: [ { end_date: null }, { end_date: { $gte: new Date() } } ] },'id code discount discount_type max_discount total_purchase_condition freeShipping');
   if(!coupon){
     return res.status(404).json({ 

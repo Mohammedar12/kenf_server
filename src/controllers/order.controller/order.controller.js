@@ -16,9 +16,9 @@ const ordersList = catchAsync(async(req,res,next)=>{
     filter.customer = convertObjectId(req.user.id);
   }
   filter.paymentStatus = "SUCCESS";
-  options.select = "id tryoto_id status totalPrice paymentStatus paymentInfo.invoiceId createdAt";
+  options.select = "id tryoto_id status totalPrice paymentStatus paymentInfo.invoiceId createdAt billingInfo.name";
   if(req.user?.role === 'admin'){
-    options.select += " items customer";
+    options.select += " items";
     options.populate = [
         {
             path: 'items',
@@ -36,10 +36,6 @@ const ordersList = catchAsync(async(req,res,next)=>{
                     }
                 ]
             }
-        },
-        {
-            path: 'customer',
-            select: 'id name'
         },
         {
             path: 'coupon',

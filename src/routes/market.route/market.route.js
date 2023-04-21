@@ -12,7 +12,7 @@ router.route('/coupon')
 
 router.route('/coupon/stats/:id').get(auth(), validate(marketValidation.couponId), marketController.getCouponStats);
 
-router.route('/coupon/apply').get(auth,validate(marketValidation.applyCouponCode),marketController.applyCouponCode);
+router.route('/coupon/apply').get(auth(),validate(marketValidation.applyCouponCode),marketController.applyCouponCode);
 
 router.route('/coupon/:id')
     .delete(auth('admin'), validate(marketValidation.couponId), marketController.deleteCoupon)

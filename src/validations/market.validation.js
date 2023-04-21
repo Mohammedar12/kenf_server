@@ -10,7 +10,7 @@ const couponId = {
 };
 
 const applyCouponCode = {
-  params: Joi.object().keys({
+  query: Joi.object().keys({
     code: Joi.string().required()
   }),
 };
