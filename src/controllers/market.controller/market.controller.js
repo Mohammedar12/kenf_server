@@ -196,13 +196,13 @@ const getCouponStats = catchAsync(async (req, res, next) => {
       });
     }
   }
-  let count = await Order.countDocuments({ coupon_id: coupon_id, paymentStatus: 'SUCCESSED' });
+  let count = await Order.countDocuments({ coupon: coupon_id, paymentStatus: 'SUCCESSED' });
   let profit = 0;
   if(coupon.profit_type === 'fixed'){
     profit = count * count.profit;
   }
   let totalAmount = await Order.aggregate([
-    { $match: { coupon_id: coupon_id, paymentStatus: 'SUCCESSED' } },
+    { $match: { coupon: coupon_id, paymentStatus: 'SUCCESSED' } },
     { $group: { _id: null, amount: { $sum: "$effectivePrice" } } }
   ]);
   if(coupon.profit_type === 'percent'){
