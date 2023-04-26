@@ -199,7 +199,7 @@ const getCouponStats = catchAsync(async (req, res, next) => {
   let count = await Order.countDocuments({ coupon: coupon_id, paymentStatus: 'SUCCESS' });
   let profit = 0;
   if(coupon.profit_type === 'fixed'){
-    profit = count * count.profit;
+    profit = count * coupon.profit;
   }
   let totalAmount = await Order.aggregate([
     { $match: { coupon: coupon_id, paymentStatus: 'SUCCESS' } },
@@ -214,6 +214,7 @@ const getCouponStats = catchAsync(async (req, res, next) => {
       status: 200,
       message: '',
       data: {
+        code: coupon.code,
         count, profit, userName: coupon.user, sales: (totalAmount && totalAmount.length != 0) ? totalAmount[0].amount : 0 
       }
     });
