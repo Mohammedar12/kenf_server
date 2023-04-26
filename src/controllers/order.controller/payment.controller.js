@@ -154,7 +154,7 @@ const executePayment = catchAsync(async(req,res,next)=>{
                 message: "Coupon not found",
             });
         }
-        if(coupon.total_purchase_condition && coupon.total_purchase_condition !== 0 && coupon.total_purchase_condition < totalShoppingBag){
+        if(coupon.total_purchase_condition && coupon.total_purchase_condition !== 0 && coupon.total_purchase_condition > totalShoppingBag){
             return res.status(400).json({
                 status: 400,
                 message: "Coupon only applicable if total purchase is above "+coupon.total_purchase_condition,
