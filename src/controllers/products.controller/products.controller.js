@@ -232,7 +232,7 @@ const getProductListAdmin = catchAsync(async (req, res, next) => {
     delete filter.shops;
   }
   if(filter.search && search.search !== ''){
-    filter["$text"] = {$search: filter.search};
+    filter["$text"] = {'$search': filter.search};
     delete filter.search;
   }
   if(!options.sort || options.sort === ''){
