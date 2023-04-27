@@ -325,7 +325,7 @@ const getProductApp = catchAsync(async (req, res, next) => {
   delete product.quantity;
   if(req.user?.id){
     const isFavorite = await Favorite.exists({ user: req.user.id, product: productId });
-    product.isFavorite = isFavorite;
+    product.isFavorite = isFavorite ? true : false;
   }
   await Product.updateOne({ _id: productId, active: true },{
     $inc: {
