@@ -231,8 +231,8 @@ const getProductListAdmin = catchAsync(async (req, res, next) => {
     filter.shop = { $in: filter.shops };
     delete filter.shops;
   }
-  if(filter.search && search.search !== ''){
-    filter["$text"] = {'$search': filter.search};
+  if(filter.search && filter.search !== ''){
+    filter["$text"] = {$search: filter.search};
     delete filter.search;
   }
   if(!options.sort || options.sort === ''){
