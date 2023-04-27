@@ -286,45 +286,47 @@ const paymentWebhook = catchAsync(async (req, res, next) => {
         order.paymentInfo.paymentId = body.Data.PaymentId;
         order.paymentStatus = body.Data.TransactionStatus;
         await order.save();
-        for(let i=0;i<order.items.length;i++){
-            await Product.updateOne({ _id: order.items[i].product.id },{ $inc: { quantity: -order.items[i].quantity } })
+        if(body.Data.TransactionStatus === 'SUCCESS'){
+            for(let i=0;i<order.items.length;i++){
+                await Product.updateOne({ _id: order.items[i].product.id },{ $inc: { quantity: -order.items[i].quantity } })
+            }
+            let date = new Date();
+            let orderId = date.getTime();
+            let data = {
+                orderId: orderId,
+                pickupLocationCode: "W-KENF-01",
+                serviceType: "fastDelivery",
+                createShipment: true,
+                payment_method: "paid",
+                amount: order.totalPrice,
+                amount_due: 0,
+                currency: "SAR",
+                customer: {
+                    name: order.deliveryInfo.name,
+                    email: order.deliveryInfo.email,
+                    mobile: order.deliveryInfo.phone,
+                    address: order.deliveryInfo.address,
+                    city: order.deliveryInfo.city,
+                    country: order.deliveryInfo.country,
+                    postcode: order.deliveryInfo.zipCode,
+                },
+                items: order.items.map((item) => {
+                    return {
+                        productId: item.product.id,
+                        name: item.product.name_en,
+                        price: item.price,
+                        quantity: item.quantity,
+                        sku: item.product.id,
+                    };
+                }),
+            };
+            try{
+                let deliveryResponse = await tryotoService('createOrder','post',data);
+                order.tryoto_id = deliveryResponse.data.otoId;
+                await order.save();
+            }
+            catch(e){ logger.error(e); }
         }
-        let date = new Date();
-        let orderId = date.getTime();
-        let data = {
-            orderId: orderId,
-            pickupLocationCode: "W-KENF-01",
-            serviceType: "fastDelivery",
-            createShipment: true,
-            payment_method: "paid",
-            amount: order.totalPrice,
-            amount_due: 0,
-            currency: "SAR",
-            customer: {
-                name: order.deliveryInfo.name,
-                email: order.deliveryInfo.email,
-                mobile: order.deliveryInfo.phone,
-                address: order.deliveryInfo.address,
-                city: order.deliveryInfo.city,
-                country: order.deliveryInfo.country,
-                postcode: order.deliveryInfo.zipCode,
-            },
-            items: order.items.map((item) => {
-                return {
-                    productId: item.product.id,
-                    name: item.product.name_en,
-                    price: item.price,
-                    quantity: item.quantity,
-                    sku: item.product.id,
-                };
-            }),
-        };
-        try{
-            let deliveryResponse = await tryotoService('createOrder','post',data);
-            order.tryoto_id = deliveryResponse.data.otoId;
-            await order.save();
-        }
-        catch(e){ logger.error(e); }
     }
     return res.status(200).json({
         status: 200,
