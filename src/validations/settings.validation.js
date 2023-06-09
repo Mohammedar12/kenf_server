@@ -218,7 +218,7 @@ const createBrand = {
     name_en: Joi.string().trim().min(2).max(255).required(),
     name_ar: Joi.string().trim().min(2).max(255).required(),
     active: Joi.boolean(),
-    // images: Joi.array().items(Joi.string().custom(objectId)).min(1).max(10).required()
+    images: Joi.array().items(Joi.string().custom(objectId)).min(1).max(10).required()
   }),
 };
 
