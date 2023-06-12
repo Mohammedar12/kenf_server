@@ -22,7 +22,7 @@ const createProduct = {
     category: Joi.string().custom(objectId).required(),
     kenf_collection: Joi.string().custom(objectId).required(),
     purity: Joi.array().items(Joi.string().custom(objectId)).min(1).required(),
-    brand: Joi.items(Joi.string().custom(objectId)).min(1).required(),
+    brand: Joi.string().custom(objectId).required(),
     shop: Joi.string().custom(objectId).required(),
     weight: Joi.number().min(0).required(),
     quantity: Joi.number().min(0).required(),
